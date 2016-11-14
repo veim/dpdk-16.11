@@ -342,7 +342,7 @@ qa_crypto_callback(CpaCySymDpOpData *pOpData, CpaStatus status,
  * the application. No freeing of previous allocations will occur.
  */
 static void *
-alloc_memzone_region(uint32_t length, uint32_t lcore_id)
+alloc_memzone_region(uint32_t length, struct rte_port_crypto_reader *p)
 {
 	char *current_free_addr_ptr = NULL;
 	struct lcore_memzone *lcore_memzone = &(p->lcoreMemzone);
@@ -454,7 +454,7 @@ initCySymSession(const int pkt_cipher_alg,
 		const CpaCySymCipherDirection crypto_direction,
 		CpaCySymSessionCtx **ppSessionCtx,
 		const CpaInstanceHandle cyInstanceHandle,
-		const uint32_t lcore_id)
+		struct rte_port_crypto_reader *p)
 {
 	Cpa32U sessionCtxSizeInBytes = 0;
 	CpaStatus status = CPA_STATUS_FAIL;
@@ -665,7 +665,7 @@ initCySymSession(const int pkt_cipher_alg,
 		return CPA_STATUS_FAIL;
 	}
 
-	*ppSessionCtx = alloc_memzone_region(sessionCtxSizeInBytes, lcore_id);
+	*ppSessionCtx = alloc_memzone_region(sessionCtxSizeInBytes, p);
 	if (NULL == *ppSessionCtx) {
 		printf("Crypto: Failed to allocate memory for Session Context\n");
 		return CPA_STATUS_FAIL;
@@ -694,7 +694,7 @@ initSessionDataTables(struct rte_port_crypto_reader *p)
 					CPA_CY_SYM_CIPHER_DIRECTION_ENCRYPT,
 					&p->encryptSessionHandleTbl[i][j],
 					p->instanceHandle,
-					p->lcore_id);
+					p);
 
 			if (CPA_STATUS_SUCCESS != status) {
 				printf("Crypto: Failed to initialize Encrypt sessions\n");
@@ -704,7 +704,7 @@ initSessionDataTables(struct rte_port_crypto_reader *p)
 					CPA_CY_SYM_CIPHER_DIRECTION_DECRYPT,
 					&p->decryptSessionHandleTbl[i][j],
 					p->instanceHandle,
-					p->lcore_id);
+					p);
 			if (CPA_STATUS_SUCCESS != status) {
 				printf("Crypto: Failed to initialize Decrypt sessions\n");
 				return CPA_STATUS_FAIL;
@@ -961,7 +961,7 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	}
 	p->lcoreMemzone.next_free_address = p->lcoreMemzone.memzone->addr;
 
-	p->pPacketIV = alloc_memzone_region(IV_LENGTH_16_BYTES, p->lcore_id);
+	p->pPacketIV = alloc_memzone_region(IV_LENGTH_16_BYTES, p);
 
 	if (NULL == p->pPacketIV ) {
 		printf("Crypto: Failed to allocate memory for Initialization Vector\n");
