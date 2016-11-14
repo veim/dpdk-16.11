@@ -1053,6 +1053,9 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 			(struct rte_port_crypto_writer_params *) params;
 	struct rte_port_crypto_writer *p;
 
+	CpaStatus status = CPA_STATUS_FAIL;
+	char memzone_name[RTE_MEMZONE_NAMESIZE];
+
 	/* Check input parameters */
 	if ((conf == NULL) ||
 		(conf->crypto_burst_sz == 0) ||
