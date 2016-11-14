@@ -927,7 +927,7 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 {
 	struct rte_port_crypto_reader_params *conf =
 			(struct rte_port_crypto_reader_params *) params;
-	struct rte_port_crypto_reader *port;
+	struct rte_port_crypto_reader *p;
 
 	/* Check input parameters */
 	if (conf == NULL) {
@@ -936,26 +936,26 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	}
 
 	/* Memory allocation */
-	port = rte_zmalloc_socket("PORT", sizeof(*port),
+	p = rte_zmalloc_socket("port", sizeof(*p),
 			RTE_CACHE_LINE_SIZE, socket_id);
-	if (port == NULL) {
+	if (p == NULL) {
 		RTE_LOG(ERR, PORT, "%s: Failed to allocate port\n", __func__);
 		return NULL;
 	}
 
 	/* Initialization */
-	port->socket_id = conf->socket_id;
-	port->lcore_id = conf->lcore_id;
-	port->port_id = conf->port_id;
-	port->ec_dc = conf->ec_dc;
+	p->socket_id = conf->socket_id;
+	p->lcore_id = conf->lcore_id;
+	p->port_id = conf->port_id;
+	p->ec_dc = conf->ec_dc;
 
 	/* Allocate software ring for response messages. */
-	port->callbackQueue.head = 0;
-	port->callbackQueue.tail = 0;
-	port->callbackQueue.numEntries = 0;
-	port->kickFreq = 0;
-	port->qaOutstandingRequests = 0;
-	port->numResponseAttempts = 0;
+	p->callbackQueue.head = 0;
+	p->callbackQueue.tail = 0;
+	p->callbackQueue.numEntries = 0;
+	p->kickFreq = 0;
+	p->qaOutstandingRequests = 0;
+	p->numResponseAttempts = 0;
 
 	/*** deleted many codes, as this is only a reader rather than writer ***/
 
@@ -972,9 +972,9 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	 * mapping. This will be called by the QAT driver during initialisation only.
 	 */
 
-	crypto_readers[port->lcore_id] = port;
+	crypto_readers[p->lcore_id] = p;
 
-	return port;
+	return p;
 }
 
 static int
@@ -1051,7 +1051,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 {
 	struct rte_port_crypto_writer_params *conf =
 			(struct rte_port_crypto_writer_params *) params;
-	struct rte_port_crypto_writer *port;
+	struct rte_port_crypto_writer *p;
 
 	/* Check input parameters */
 	if ((conf == NULL) ||
@@ -1063,22 +1063,22 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	}
 
 	/* Memory allocation */
-	port = rte_zmalloc_socket("PORT", sizeof(*port),
+	p = rte_zmalloc_socket("PORT", sizeof(*p),
 			RTE_CACHE_LINE_SIZE, socket_id);
-	if (port == NULL) {
+	if (p == NULL) {
 		RTE_LOG(ERR, PORT, "%s: Failed to allocate port\n", __func__);
 		return NULL;
 	}
 
 	/* Initialization */
-	port->port_id = conf->port_id;
-	port->ec_dc = conf->ec_dc;
-	port->crypto_burst_sz = conf->crypto_burst_sz;
-	port->crypto_buf_count = 0;
-	port->bsz_mask = 1LLU << (conf->crypto_burst_sz - 1);
+	p->port_id = conf->port_id;
+	p->ec_dc = conf->ec_dc;
+	p->crypto_burst_sz = conf->crypto_burst_sz;
+	p->crypto_buf_count = 0;
+	p->bsz_mask = 1LLU << (conf->crypto_burst_sz - 1);
 
-	port->cipher = conf->cipher;
-	port->hasher = conf->hasher;
+	p->cipher = conf->cipher;
+	p->hasher = conf->hasher;
 
 	/* Allocate software ring for response messages. */
 	p->callbackQueue.head = 0;
@@ -1160,9 +1160,9 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 		return NULL;
 	}
 
-	crypto_writers[port->lcore_id] = port;
+	crypto_writers[p->lcore_id] = p;
 
-	return port;
+	return p;
 }
 
 static inline void
