@@ -46,6 +46,12 @@ EXPORT_MAP := rte_port_version.map
 
 LIBABIVER := 3
 
+
+#
+# added for rte_port_crypto
+#
+INC += $(ICP_ROOT)/quickassist/include
+
 #
 # all source are stored in SRCS-y
 #
@@ -62,6 +68,8 @@ SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_kni.c
 endif
 SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_source_sink.c
 
+SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_crypto.c
+
 # install includes
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port.h
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_ethdev.h
@@ -77,6 +85,8 @@ SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_kni.h
 endif
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
 
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
+
 # this lib depends upon:
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) := lib/librte_eal
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_mbuf
@@ -87,5 +97,7 @@ DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_sched
 ifeq ($(CONFIG_RTE_LIBRTE_KNI),y)
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_kni
 endif
+
+
 
 include $(RTE_SDK)/mk/rte.lib.mk

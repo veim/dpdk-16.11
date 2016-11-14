@@ -38,14 +38,6 @@
 
  #include "rte_port.h"
 
- /** crypto_reader port parameters */
- struct rte_port_crypto_reader_params {
- 	/** NIC RX port ID */
- 	uint8_t port_id;
-
- 	/** NIC RX queue ID */
- 	uint16_t queue_id;
- };
 
 /* Pass Labels/Values to crypto units */
 enum cipher_alg {
@@ -99,5 +91,37 @@ extern void crypto_exit(void);
 extern void *crypto_get_next_response(void);
 
 extern void crypto_flush_tx_queue(uint32_t lcore_id);
+
+
+/** crypto_reader port parameters */
+struct rte_port_crypto_reader_params {
+   /** NIC RX port ID */
+   uint8_t port_id;
+
+   /** encrypto or decrypto flag */
+   uint8_t ec_dc;
+};
+
+/** crypto_reader port operations */
+extern struct rte_port_in_ops rte_port_crypto_reader_ops;
+
+/** crypto_writer port parameters */
+struct rte_port_crypto_writer_params {
+   /** NIC RX port ID */
+   uint8_t port_id;
+
+   /** encrypto or decrypto flag */
+   uint8_t ec_dc;
+
+   /** Recommended burst size to NIC TX queue. The actual burst size can be
+   bigger or smaller than this value. */
+   uint32_t crypto_burst_sz;
+
+   enum cipher_alg cipher;
+   enum hash_alg hasher;
+};
+
+/** crypto_writer port operations */
+extern struct rte_port_out_ops rte_port_crypot_writer_ops;
 
 #endif /* CRYPTO_H_ */
