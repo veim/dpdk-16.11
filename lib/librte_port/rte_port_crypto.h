@@ -87,13 +87,13 @@ extern enum crypto_result crypto_decrypt(struct rte_mbuf *pkt,
 
 extern int crypto_init(void);
 
-extern int per_core_crypto_init(uint32_t lcore_id);
+//extern int per_core_crypto_init(uint32_t lcore_id);
 
 extern void crypto_exit(void);
 
 extern void *crypto_get_next_response(void);
 
-extern void crypto_flush_tx_queue(uint32_t lcore_id);
+extern void crypto_flush_tx_queue(struct rte_port_crypto_writer *p);
 
 
 /** crypto_reader port parameters */
