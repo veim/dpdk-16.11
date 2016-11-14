@@ -995,7 +995,7 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 	}
 
 	/* If there are no outstanding requests no need to poll, return entry */
-	if (p->qaOutstandingRequests == 0)
+	if (n_pkts == 0 || p->qaOutstandingRequests == 0)
 		return 0;
 
 	if (p->callbackQ.numEntries < CRYPTO_QUEUED_RESP_POLL_THRESHOLD
@@ -1010,7 +1010,6 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 
 	*pkts = (struct rte_mbuf *) entry;
 	//RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(p, pkt_cnt);
-	n_pkts = 0;
 
 	return 1;
 }
