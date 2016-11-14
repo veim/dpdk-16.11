@@ -777,6 +777,9 @@ crypto_encrypt(struct rte_mbuf *rte_buff, struct rte_port_crypto_writer *p)
 			rte_pktmbuf_mtod_offset(rte_buff, CpaCySymDpOpData *,
 						CRYPTO_OFFSET_TO_OPDATA);
 
+	enum cipher_alg c = p->cipher;
+	enum hash_alg h = p->hasher;
+
 	if (unlikely(c >= NUM_CRYPTO || h >= NUM_HMAC))
 		return CRYPTO_RESULT_FAIL;
 
