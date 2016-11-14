@@ -77,6 +77,9 @@ enum crypto_result {
 	CRYPTO_RESULT_FAIL,
 };
 
+struct rte_port_crypto_writer;
+struct rte_port_crypto_reader;
+
 extern enum crypto_result crypto_encrypt(struct rte_mbuf *pkt,
 	struct rte_port_crypto_writer *p);
 extern enum crypto_result crypto_decrypt(struct rte_mbuf *pkt,
