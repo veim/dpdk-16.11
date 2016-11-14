@@ -254,7 +254,7 @@ struct glob_keys g_crypto_hash_keys = {
 struct rte_port_crypto_reader {
 	struct rte_port_in_stats stats;
 
-	uint32_t socke_id;
+	uint32_t socket_id;
 	uint32_t lcore_id;
 	uint8_t port_id;
 	uint8_t ec_dc;
