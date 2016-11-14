@@ -50,8 +50,8 @@ LIBABIVER := 3
 #
 # added for rte_port_crypto
 #
-ICP_ROOT = ICP_ROOT=/QAT/QAT1.6
-INC += $(ICP_ROOT)/quickassist/include
+#ICP_ROOT = ICP_ROOT=/QAT/QAT1.6/
+#INC += $(ICP_ROOT)/quickassist/include
 
 #
 # all source are stored in SRCS-y
@@ -86,7 +86,11 @@ SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_kni.h
 endif
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
 
+
+#SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += include/*.h
+INC += $(wildcard include_qat/*.h)
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
+
 
 # this lib depends upon:
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) := lib/librte_eal
