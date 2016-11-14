@@ -1219,9 +1219,9 @@ rte_port_crypto_writer_tx_bulk(void *port,
 			((pkts_mask & bsz_mask) ^ bsz_mask);
 
 	if (expr == 0) {
-		uint64_t n_pkts = __builtin_popcountll(pkts_mask);
+//		uint64_t n_pkts = __builtin_popcountll(pkts_mask);
 //		uint32_t n_pkts_ok;
-		enum crypto_result ret;
+//		enum crypto_result ret;
 		if (crypto_buf_count)
 			process_burst(p);
 
@@ -1259,7 +1259,7 @@ rte_port_crypto_writer_flush(void *port)
 	struct rte_port_crypto_writer *p =
 		(struct rte_port_crypto_writer *) port;
 
-	if (p->tx_buf_count > 0)
+	if (p->crypto_buf_count > 0)
 		process_burst(p);
 
 	return 0;
