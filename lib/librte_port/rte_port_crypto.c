@@ -316,7 +316,7 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 {
 	uint32_t lcore_id;
 	lcore_id = rte_lcore_id();
-	
+
 	struct qa_callbackQueue *callbackQ =
 		&(crypto_readers[lcore_id]->callbackQueue);
 
@@ -327,7 +327,7 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 	callbackQ->qaCallbackRing[callbackQ->head] = pOpData->pCallbackTag;
 	callbackQ->head++;
 	callbackQ->numEntries++;
-	p->qaOutstandingRequests--;
+	crypto_readers[lcore_id]->qaOutstandingRequests--;
 }
 
 static void
