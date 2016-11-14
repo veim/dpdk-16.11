@@ -150,7 +150,7 @@ struct qa_core_conf {
 
 #define MAX_CORES   (RTE_MAX_LCORE)
 
-static struct qa_core_conf qaCoreConf[MAX_CORES];
+//static struct qa_core_conf qaCoreConf[MAX_CORES];
 
 /*
  *Create maximum possible key size,
@@ -232,6 +232,83 @@ struct glob_keys g_crypto_hash_keys = {
 		response quota.
 #endif
 
+
+
+/*
+ * Port CRYPTO Reader
+ */
+#ifdef RTE_PORT_STATS_COLLECT
+
+#define RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(port, val) \
+	port->stats.n_pkts_in += val
+#define RTE_PORT_CRYPTO_READER_STATS_PKTS_DROP_ADD(port, val) \
+	port->stats.n_pkts_drop += val
+
+#else
+
+#define RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(port, val)
+#define RTE_PORT_CRYPTO_READER_STATS_PKTS_DROP_ADD(port, val)
+
+#endif
+
+struct rte_port_crypto_reader {
+	struct rte_port_in_stats stats;
+
+	uint32_t socke_id;
+	uint32_t lcore_id;
+	uint8_t port_id;
+	uint8_t ec_dc;
+
+	CpaCySymDpSessionCtx *encryptSessionHandleTbl[NUM_CRYPTO][NUM_HMAC];
+	CpaCySymDpSessionCtx *decryptSessionHandleTbl[NUM_CRYPTO][NUM_HMAC];
+	CpaInstanceHandle instanceHandle;
+	struct qa_callbackQueue callbackQueue;
+	uint64_t qaOutstandingRequests;
+	uint64_t numResponseAttempts;
+	uint8_t kickFreq;
+	void *pPacketIV;
+	CpaPhysicalAddr packetIVPhy;
+	struct lcore_memzone lcoreMemzone;
+	CpaInstanceHandle instanceHandle;
+
+	struct qa_callbackQueue callbackQ;
+};
+
+
+
+/*
+ * Port CRYPTO Writer
+ */
+#ifdef RTE_PORT_STATS_COLLECT
+
+#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(port, val) \
+	port->stats.n_pkts_in += val
+#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(port, val) \
+	port->stats.n_pkts_drop += val
+
+#else
+
+#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(port, val)
+#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(port, val)
+
+#endif
+
+struct rte_port_crypto_writer {
+	struct rte_port_out_stats stats;
+
+	struct rte_mbuf *crypto_buf[2 * RTE_PORT_IN_BURST_SIZE_MAX];
+	uint32_t crypto_burst_sz;
+	uint16_t crypto_buf_count;
+	uint64_t bsz_mask;
+	uint8_t port_id;
+
+	uint8_t ec_dc;
+	enum cipher_alg cipher;
+	enum hash_alg hasher;
+};
+
+
+
 static void
 crypto_callback(CpaCySymDpOpData *pOpData,
 		__rte_unused CpaStatus status,
@@ -239,7 +316,7 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 {
 	uint32_t lcore_id;
 	lcore_id = rte_lcore_id();
-	struct qa_callbackQueue *callbackQ = &(qaCoreConf[lcore_id].callbackQueue);
+	struct qa_callbackQueue *callbackQ = &(p->callbackQueue);
 
 	/*
 	 * Received a completion from the QA hardware.
@@ -248,7 +325,7 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 	callbackQ->qaCallbackRing[callbackQ->head] = pOpData->pCallbackTag;
 	callbackQ->head++;
 	callbackQ->numEntries++;
-	qaCoreConf[lcore_id].qaOutstandingRequests--;
+	p->qaOutstandingRequests--;
 }
 
 static void
@@ -266,7 +343,7 @@ static void *
 alloc_memzone_region(uint32_t length, uint32_t lcore_id)
 {
 	char *current_free_addr_ptr = NULL;
-	struct lcore_memzone *lcore_memzone = &(qaCoreConf[lcore_id].lcoreMemzone);
+	struct lcore_memzone *lcore_memzone = &(p->lcoreMemzone);
 
 	current_free_addr_ptr  = lcore_memzone->next_free_address;
 
@@ -290,7 +367,7 @@ qa_v2p(void *ptr)
 	const struct rte_memzone *memzone = NULL;
 	uint32_t lcore_id = 0;
 	RTE_LCORE_FOREACH(lcore_id) {
-		memzone = qaCoreConf[lcore_id].lcoreMemzone.memzone;
+		memzone = p->lcoreMemzone.memzone;
 
 		if ((char*) ptr >= (char *) memzone->addr &&
 				(char*) ptr < ((char*) memzone->addr + memzone->len)) {
@@ -602,7 +679,7 @@ initCySymSession(const int pkt_cipher_alg,
 }
 
 static CpaStatus
-initSessionDataTables(struct qa_core_conf *qaCoreConf,uint32_t lcore_id)
+initSessionDataTables(struct rte_port_crypto_reader *p)
 {
 	Cpa32U i = 0, j = 0;
 	CpaStatus status = CPA_STATUS_FAIL;
@@ -613,18 +690,19 @@ initSessionDataTables(struct qa_core_conf *qaCoreConf,uint32_t lcore_id)
 				continue;
 			status = initCySymSession(i, j, CPA_CY_SYM_HASH_MODE_AUTH,
 					CPA_CY_SYM_CIPHER_DIRECTION_ENCRYPT,
-					&qaCoreConf->encryptSessionHandleTbl[i][j],
-					qaCoreConf->instanceHandle,
-					lcore_id);
+					&p->encryptSessionHandleTbl[i][j],
+					p->instanceHandle,
+					p->lcore_id);
+
 			if (CPA_STATUS_SUCCESS != status) {
 				printf("Crypto: Failed to initialize Encrypt sessions\n");
 				return CPA_STATUS_FAIL;
 			}
 			status = initCySymSession(i, j, CPA_CY_SYM_HASH_MODE_AUTH,
 					CPA_CY_SYM_CIPHER_DIRECTION_DECRYPT,
-					&qaCoreConf->decryptSessionHandleTbl[i][j],
-					qaCoreConf->instanceHandle,
-					lcore_id);
+					&p->decryptSessionHandleTbl[i][j],
+					p->instanceHandle,
+					p->lcore_id);
 			if (CPA_STATUS_SUCCESS != status) {
 				printf("Crypto: Failed to initialize Decrypt sessions\n");
 				return CPA_STATUS_FAIL;
@@ -645,100 +723,6 @@ crypto_init(void)
 	return 0;
 }
 
-/*
- * Per core initialisation
- */
-int
-per_core_crypto_init(uint32_t lcore_id)
-{
-	CpaStatus status = CPA_STATUS_FAIL;
-	char memzone_name[RTE_MEMZONE_NAMESIZE];
-
-	int socketID = rte_lcore_to_socket_id(lcore_id);
-
-	/* Allocate software ring for response messages. */
-
-	qaCoreConf[lcore_id].callbackQueue.head = 0;
-	qaCoreConf[lcore_id].callbackQueue.tail = 0;
-	qaCoreConf[lcore_id].callbackQueue.numEntries = 0;
-	qaCoreConf[lcore_id].kickFreq = 0;
-	qaCoreConf[lcore_id].qaOutstandingRequests = 0;
-	qaCoreConf[lcore_id].numResponseAttempts = 0;
-
-	/* Initialise and reserve lcore memzone for virt2phys translation */
-	snprintf(memzone_name,
-			RTE_MEMZONE_NAMESIZE,
-			"lcore_%u",
-			lcore_id);
-
-	qaCoreConf[lcore_id].lcoreMemzone.memzone = rte_memzone_reserve(
-			memzone_name,
-			LCORE_MEMZONE_SIZE,
-			socketID,
-			0);
-	if (NULL == qaCoreConf[lcore_id].lcoreMemzone.memzone) {
-		printf("Crypto: Error allocating memzone on lcore %u\n",lcore_id);
-		return -1;
-	}
-	qaCoreConf[lcore_id].lcoreMemzone.next_free_address =
-							qaCoreConf[lcore_id].lcoreMemzone.memzone->addr;
-
-	qaCoreConf[lcore_id].pPacketIV = alloc_memzone_region(IV_LENGTH_16_BYTES,
-							lcore_id);
-
-	if (NULL == qaCoreConf[lcore_id].pPacketIV ) {
-		printf("Crypto: Failed to allocate memory for Initialization Vector\n");
-		return -1;
-	}
-
-	memcpy(qaCoreConf[lcore_id].pPacketIV, &g_crypto_hash_keys.iv,
-			IV_LENGTH_16_BYTES);
-
-	qaCoreConf[lcore_id].packetIVPhy = qa_v2p(qaCoreConf[lcore_id].pPacketIV);
-	if (0 == qaCoreConf[lcore_id].packetIVPhy) {
-		printf("Crypto: Invalid physical address for Initialization Vector\n");
-		return -1;
-	}
-
-	/*
-	 * Obtain the instance handle that is mapped to the current lcore.
-	 * This can fail if an instance is not mapped to a bank which has been
-	 * affinitized to the current lcore.
-	 */
-	status = get_crypto_instance_on_core(&(qaCoreConf[lcore_id].instanceHandle),
-			lcore_id);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: get_crypto_instance_on_core failed with status: %"PRId32"\n",
-				status);
-		return -1;
-	}
-
-	status = cpaCySymDpRegCbFunc(qaCoreConf[lcore_id].instanceHandle,
-			(CpaCySymDpCbFunc) qa_crypto_callback);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: cpaCySymDpRegCbFunc failed with status: %"PRId32"\n", status);
-		return -1;
-	}
-
-	/*
-	 * Set the address translation callback for virtual to physcial address
-	 * mapping. This will be called by the QAT driver during initialisation only.
-	 */
-	status = cpaCySetAddressTranslation(qaCoreConf[lcore_id].instanceHandle,
-			(CpaVirtualToPhysical) qa_v2p);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: cpaCySetAddressTranslation failed with status: %"PRId32"\n",
-				status);
-		return -1;
-	}
-
-	status = initSessionDataTables(&qaCoreConf[lcore_id],lcore_id);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: Failed to allocate all session tables.");
-		return -1;
-	}
-	return 0;
-}
 
 static CpaStatus
 enqueueOp(CpaCySymDpOpData *opData, uint32_t lcore_id)
@@ -750,15 +734,15 @@ enqueueOp(CpaCySymDpOpData *opData, uint32_t lcore_id)
 	 * Assumption is there is no requirement to do load balancing between
 	 * acceleration units - that is one acceleration unit is tied to a core.
 	 */
-	opData->instanceHandle = qaCoreConf[lcore_id].instanceHandle;
+	opData->instanceHandle = p->instanceHandle;
 
-	if ((++qaCoreConf[lcore_id].kickFreq) % CRYPTO_BURST_TX == 0) {
+	if ((++p->kickFreq) % CRYPTO_BURST_TX == 0) {
 		status = cpaCySymDpEnqueueOp(opData, CPA_TRUE);
 	} else {
 		status = cpaCySymDpEnqueueOp(opData, CPA_FALSE);
 	}
 
-	qaCoreConf[lcore_id].qaOutstandingRequests++;
+	p->qaOutstandingRequests++;
 
 	return status;
 }
@@ -767,7 +751,7 @@ void
 crypto_flush_tx_queue(uint32_t lcore_id)
 {
 
-	cpaCySymDpPerformOpNow(qaCoreConf[lcore_id].instanceHandle);
+	cpaCySymDpPerformOpNow(p->instanceHandle);
 }
 
 enum crypto_result
@@ -787,7 +771,7 @@ crypto_encrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 
 	opData->srcBuffer = opData->dstBuffer = PACKET_DATA_START_PHYS(rte_buff);
 	opData->srcBufferLen = opData->dstBufferLen = rte_buff->data_len;
-	opData->sessionCtx = qaCoreConf[lcore_id].encryptSessionHandleTbl[c][h];
+	opData->sessionCtx = p->encryptSessionHandleTbl[c][h];
 	opData->thisPhys = PACKET_DATA_START_PHYS(rte_buff)
 			+ CRYPTO_OFFSET_TO_OPDATA;
 	opData->pCallbackTag = rte_buff;
@@ -797,8 +781,8 @@ crypto_encrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 		return CRYPTO_RESULT_FAIL;
 
 	if (NO_CIPHER != c) {
-		opData->pIv = qaCoreConf[lcore_id].pPacketIV;
-		opData->iv = qaCoreConf[lcore_id].packetIVPhy;
+		opData->pIv = p->pPacketIV;
+		opData->iv = p->packetIVPhy;
 
 		if (CIPHER_AES_CBC_128 == c)
 			opData->ivLenInBytes = IV_LENGTH_16_BYTES;
@@ -864,7 +848,7 @@ crypto_decrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 	opData->dstBufferLen = opData->srcBufferLen = rte_buff->data_len;
 	opData->thisPhys = PACKET_DATA_START_PHYS(rte_buff)
 			+ CRYPTO_OFFSET_TO_OPDATA;
-	opData->sessionCtx = qaCoreConf[lcore_id].decryptSessionHandleTbl[c][h];
+	opData->sessionCtx = p->decryptSessionHandleTbl[c][h];
 	opData->pCallbackTag = rte_buff;
 
 	/* if no crypto or hmac operations are specified return fail */
@@ -872,8 +856,8 @@ crypto_decrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 		return CRYPTO_RESULT_FAIL;
 
 	if (NO_CIPHER != c) {
-		opData->pIv = qaCoreConf[lcore_id].pPacketIV;
-		opData->iv = qaCoreConf[lcore_id].packetIVPhy;
+		opData->pIv = p->pPacketIV;
+		opData->iv = p->packetIVPhy;
 
 		if (CIPHER_AES_CBC_128 == c)
 			opData->ivLenInBytes = IV_LENGTH_16_BYTES;
@@ -914,70 +898,20 @@ crypto_decrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 	return CRYPTO_RESULT_IN_PROGRESS;
 }
 
-void *
-crypto_get_next_response(void)
-{
-	uint32_t lcore_id;
-	lcore_id = rte_lcore_id();
-	struct qa_callbackQueue *callbackQ = &(qaCoreConf[lcore_id].callbackQueue);
-	void *entry = NULL;
-
-	if (callbackQ->numEntries) {
-		entry = callbackQ->qaCallbackRing[callbackQ->tail];
-		callbackQ->tail++;
-		callbackQ->numEntries--;
-	}
-
-	/* If there are no outstanding requests no need to poll, return entry */
-	if (qaCoreConf[lcore_id].qaOutstandingRequests == 0)
-		return entry;
-
-	if (callbackQ->numEntries < CRYPTO_QUEUED_RESP_POLL_THRESHOLD
-			&& qaCoreConf[lcore_id].numResponseAttempts++
-					% GET_NEXT_RESPONSE_FREQ == 0) {
-		/*
-		 * Only poll the hardware when there is less than
-		 * CRYPTO_QUEUED_RESP_POLL_THRESHOLD elements in the software queue
-		 */
-		icp_sal_CyPollDpInstance(qaCoreConf[lcore_id].instanceHandle,
-				CRYPTO_MAX_RESPONSE_QUOTA);
-	}
-	return entry;
-}
-
-
 
 
 /*
  * Port CRYPTO Reader
  */
-#ifdef RTE_PORT_STATS_COLLECT
-
-#define RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(port, val) \
-	port->stats.n_pkts_in += val
-#define RTE_PORT_CRYPTO_READER_STATS_PKTS_DROP_ADD(port, val) \
-	port->stats.n_pkts_drop += val
-
-#else
-
-#define RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(port, val)
-#define RTE_PORT_CRYPTO_READER_STATS_PKTS_DROP_ADD(port, val)
-
-#endif
-
-struct rte_port_crypto_reader {
-	struct rte_port_in_stats stats;
-
-	uint8_t port_id;
-	uint8_t ec_dc;
-};
-
 static void *
 rte_port_crypto_reader_create(void *params, int socket_id)
 {
 	struct rte_port_crypto_reader_params *conf =
 			(struct rte_port_crypto_reader_params *) params;
 	struct rte_port_crypto_reader *port;
+
+	CpaStatus status = CPA_STATUS_FAIL;
+	char memzone_name[RTE_MEMZONE_NAMESIZE];
 
 	/* Check input parameters */
 	if (conf == NULL) {
@@ -994,8 +928,90 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	}
 
 	/* Initialization */
+	port->socket_id = conf->socket_id;
+	port->lcore_id = conf->lcore_id;
 	port->port_id = conf->port_id;
 	port->ec_dc = conf->ec_dc;
+
+	/* Allocate software ring for response messages. */
+	p->callbackQueue.head = 0;
+	p->callbackQueue.tail = 0;
+	p->callbackQueue.numEntries = 0;
+	p->kickFreq = 0;
+	p->qaOutstandingRequests = 0;
+	p->numResponseAttempts = 0;
+
+	/* Initialise and reserve lcore memzone for virt2phys translation */
+	snprintf(memzone_name,
+			RTE_MEMZONE_NAMESIZE,
+			"lcore_%u",
+			p->lcore_id);
+
+	p->lcoreMemzone.memzone = rte_memzone_reserve(
+			memzone_name,
+			LCORE_MEMZONE_SIZE,
+			p->socket_id,
+			0);
+
+	if (NULL == p->lcoreMemzone.memzone) {
+		printf("Crypto: Error allocating memzone on lcore %u\n", p->lcore_id);
+		return -1;
+	}
+	p->lcoreMemzone.next_free_address = p->lcoreMemzone.memzone->addr;
+
+	p->pPacketIV = alloc_memzone_region(IV_LENGTH_16_BYTES, p->lcore_id);
+
+	if (NULL == p->pPacketIV ) {
+		printf("Crypto: Failed to allocate memory for Initialization Vector\n");
+		return -1;
+	}
+
+	memcpy(p->pPacketIV, &g_crypto_hash_keys.iv,
+			IV_LENGTH_16_BYTES);
+
+	p->packetIVPhy = qa_v2p(p->pPacketIV);
+	if (0 == p->packetIVPhy) {
+		printf("Crypto: Invalid physical address for Initialization Vector\n");
+		return -1;
+	}
+
+	/*
+	 * Obtain the instance handle that is mapped to the current lcore.
+	 * This can fail if an instance is not mapped to a bank which has been
+	 * affinitized to the current lcore.
+	 */
+	status = get_crypto_instance_on_core(&(p->instanceHandle), p->lcore_id);
+
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: get_crypto_instance_on_core failed with status: %"PRId32"\n",
+				status);
+		return -1;
+	}
+
+	status = cpaCySymDpRegCbFunc(p->instanceHandle,
+			(CpaCySymDpCbFunc) qa_crypto_callback);
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: cpaCySymDpRegCbFunc failed with status: %"PRId32"\n", status);
+		return -1;
+	}
+
+	/*
+	 * Set the address translation callback for virtual to physcial address
+	 * mapping. This will be called by the QAT driver during initialisation only.
+	 */
+	status = cpaCySetAddressTranslation(p->instanceHandle,
+			(CpaVirtualToPhysical) qa_v2p);
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: cpaCySetAddressTranslation failed with status: %"PRId32"\n",
+				status);
+		return -1;
+	}
+
+	status = initSessionDataTables(p);
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: Failed to allocate all session tables.");
+		return NULL;
+	}
 
 	return port;
 }
@@ -1003,15 +1019,38 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 static int
 rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 {
-/*	struct rte_port_crypto_reader *p =
+	struct rte_port_crypto_reader *p =
 		(struct rte_port_crypto_reader *) port;
-	uint16_t pkt_cnt = 0;
 
-	pkt_cnt = crypto_get_next_response();
+	//uint16_t pkt_cnt = 0;
+
+	/*mainly induced from 'crypto_get_next_response()'*/
+	void *entry = NULL;
+
+	if (p->callbackQ.numEntries) {
+		entry = p->callbackQ.qaCallbackRing[p->callbackQ.tail];
+		p->callbackQ.tail++;
+		p->callbackQ.numEntries--;
+	}
+
+	/* If there are no outstanding requests no need to poll, return entry */
+	if (p->qaOutstandingRequests == 0)
+		return entry;
+
+	if (p->callbackQ.numEntries < CRYPTO_QUEUED_RESP_POLL_THRESHOLD
+			&& p->numResponseAttempts++ % GET_NEXT_RESPONSE_FREQ == 0) {
+		/*
+		 * Only poll the hardware when there is less than
+		 * CRYPTO_QUEUED_RESP_POLL_THRESHOLD elements in the software queue
+		 */
+		icp_sal_CyPollDpInstance(p->instanceHandle,
+				CRYPTO_MAX_RESPONSE_QUOTA);
+	}
+
+	*pkts = (struct rte_mbuf *) entry;
 	//RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(p, pkt_cnt);
-	return pkt_cnt;
-*/
-	return 0;
+
+	return 1;
 }
 
 static int
@@ -1042,37 +1081,10 @@ static int rte_port_crypto_reader_stats_read(void *port,
 	return 0;
 }
 
+
 /*
  * Port CRYPTO Writer
  */
-#ifdef RTE_PORT_STATS_COLLECT
-
-#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(port, val) \
-	port->stats.n_pkts_in += val
-#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(port, val) \
-	port->stats.n_pkts_drop += val
-
-#else
-
-#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(port, val)
-#define RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(port, val)
-
-#endif
-
-struct rte_port_crypto_writer {
-	struct rte_port_out_stats stats;
-
-	struct rte_mbuf *crypto_buf[2 * RTE_PORT_IN_BURST_SIZE_MAX];
-	uint32_t crypto_burst_sz;
-	uint16_t crypto_buf_count;
-	uint64_t bsz_mask;
-	uint8_t port_id;
-
-	uint8_t ec_dc;
-	enum cipher_alg cipher;
-	enum hash_alg hasher;
-};
-
 static void *
 rte_port_crypto_writer_create(void *params, int socket_id)
 {
@@ -1114,16 +1126,16 @@ static inline void
 process_burst(struct rte_port_crypto_writer *p)
 {
 //	uint32_t nb_process;
-	enum crypto_result ret;
+//	enum crypto_result ret;
 	uint32_t i;
 
 	if(p->ec_dc){
 		for(i = 0; i < p->crypto_buf_count; i++)
-			ret = crypto_encrypt(p->crypto_buf[i], p->cipher, p->hasher);
+			crypto_encrypt(p->crypto_buf[i], p->cipher, p->hasher);
 	}
 	else{
 		for(i = 0; i < p->crypto_buf_count; i++)
-			ret = crypto_decrypt(p->crypto_buf[i], p->cipher, p->hasher);
+			crypto_decrypt(p->crypto_buf[i], p->cipher, p->hasher);
 	}
 
 
@@ -1169,14 +1181,14 @@ rte_port_crypto_writer_tx_bulk(void *port,
 
 /*		RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(p, n_pkts);
 		ret = crypto_encrypt(p->crypto_buf, p->cipher, p->hasher);
-
+*/
 /*		RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(p, n_pkts - n_pkts_ok);
 		for ( ; n_pkts_ok < n_pkts; n_pkts_ok++) {
 			struct rte_mbuf *pkt = pkts[n_pkts_ok];
 
 			rte_pktmbuf_free(pkt);
-*/		}
-	} else {
+		}
+*/	} else {
 		for ( ; pkts_mask; ) {
 			uint32_t pkt_index = __builtin_ctzll(pkts_mask);
 			uint64_t pkt_mask = 1LLU << pkt_index;

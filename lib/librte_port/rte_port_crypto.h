@@ -95,6 +95,12 @@ extern void crypto_flush_tx_queue(uint32_t lcore_id);
 
 /** crypto_reader port parameters */
 struct rte_port_crypto_reader_params {
+   /*socket_id the crypto dev attached*/
+   uint32_t socket_id;
+
+   /*lcore_id the crypto dev's input pipeline run*/
+   uint32_t lcore_id;
+   
    /** NIC RX port ID */
    uint8_t port_id;
 
