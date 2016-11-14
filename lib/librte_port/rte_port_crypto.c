@@ -846,17 +846,17 @@ crypto_encrypt(struct rte_mbuf *rte_buff, struct rte_port_crypto_writer *p)
 }
 
 enum crypto_result
-crypto_decrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
+crypto_decrypt(struct rte_mbuf *rte_buff, struct rte_port_ethdev_writer *p)
 {
 
 	CpaCySymDpOpData *opData = rte_pktmbuf_mtod_offset(rte_buff, void *,
 							   CRYPTO_OFFSET_TO_OPDATA);
-	uint32_t lcore_id;
+
+	enum cipher_alg c = p->cipher;
+	enum hash_alg h = p->hasher;
 
 	if (unlikely(c >= NUM_CRYPTO || h >= NUM_HMAC))
 		return CRYPTO_RESULT_FAIL;
-
-	lcore_id = rte_lcore_id();
 
 	memset(opData, 0, sizeof(CpaCySymDpOpData));
 
@@ -904,7 +904,7 @@ crypto_decrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 		opData->digestResult = rte_buff->buf_physaddr + rte_buff->data_len;
 	}
 
-	if (CPA_STATUS_SUCCESS != enqueueOp(opData, lcore_id)) {
+	if (CPA_STATUS_SUCCESS != enqueueOp(opData, p)) {
 		/*
 		 * Failed to place a packet on the hardware queue.
 		 * Most likely because the QA hardware is busy.
