@@ -1003,13 +1003,15 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 static int
 rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 {
-	struct rte_port_crypto_reader *p =
+/*	struct rte_port_crypto_reader *p =
 		(struct rte_port_crypto_reader *) port;
 	uint16_t pkt_cnt = 0;
 
-	//pkt_cnt = crypto_get_next_response(/*to do here*/);
+	pkt_cnt = crypto_get_next_response();
 	//RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(p, pkt_cnt);
 	return pkt_cnt;
+*/
+	return 0;
 }
 
 static int
@@ -1113,12 +1115,15 @@ process_burst(struct rte_port_crypto_writer *p)
 {
 //	uint32_t nb_process;
 	enum crypto_result ret;
+	uint32_t i;
 
-	if(p->ec_ds){
-		ret = crypto_encrypt(p->crypto_buf, p->cipher, p->hasher);
+	if(p->ec_dc){
+		for(i = 0; i < p->crypto_buf_count; i++)
+			ret = crypto_encrypt(p->crypto_buf[i], p->cipher, p->hasher);
 	}
 	else{
-		ret = crypto_decrypt(p->crypto_buf, p->cipher, p->hasher);
+		for(i = 0; i < p->crypto_buf_count; i++)
+			ret = crypto_decrypt(p->crypto_buf[i], p->cipher, p->hasher);
 	}
 
 
