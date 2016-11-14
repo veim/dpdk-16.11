@@ -87,8 +87,28 @@ endif
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
 
 
+
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_common.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_dh.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_drbg.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_dsa.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ec.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ecdh.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ecdsa.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_im.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_key.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ln.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_nrbg.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_prime.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_rsa.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_sym_dp.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_sym.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_dc_dp.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_dc.h
+
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_types.h
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa.h
+
 #INC += $(wildcard include_qat/*.h)
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
 
