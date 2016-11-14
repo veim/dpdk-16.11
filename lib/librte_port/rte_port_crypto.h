@@ -77,10 +77,10 @@ enum crypto_result {
 	CRYPTO_RESULT_FAIL,
 };
 
-extern enum crypto_result crypto_encrypt(struct rte_mbuf *pkt, enum cipher_alg c,
-		enum hash_alg h);
-extern enum crypto_result crypto_decrypt(struct rte_mbuf *pkt, enum cipher_alg c,
-		enum hash_alg h);
+extern enum crypto_result crypto_encrypt(struct rte_mbuf *pkt,
+	struct rte_port_crypto_writer *p);
+extern enum crypto_result crypto_decrypt(struct rte_mbuf *pkt,
+	struct rte_port_crypto_writer *p);
 
 extern int crypto_init(void);
 
@@ -100,7 +100,7 @@ struct rte_port_crypto_reader_params {
 
    /*lcore_id the crypto dev's input pipeline run*/
    uint32_t lcore_id;
-   
+
    /** NIC RX port ID */
    uint8_t port_id;
 

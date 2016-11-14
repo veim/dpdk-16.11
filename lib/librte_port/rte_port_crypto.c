@@ -764,7 +764,7 @@ enqueueOp(CpaCySymDpOpData *opData, struct rte_port_crypto_writer *p)
 }
 
 void
-crypto_flush_tx_queue(uint32_t lcore_id)
+crypto_flush_tx_queue(struct rte_port_crypto_writer *p)
 {
 
 	cpaCySymDpPerformOpNow(p->instanceHandle);
