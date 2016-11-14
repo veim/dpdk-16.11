@@ -320,7 +320,7 @@ struct rte_port_crypto_writer {
 	struct qa_callbackQueue callbackQ;
 };
 
-static struct rte_port_crypto_writer *crypto_writer[MAX_CORES];
+static struct rte_port_crypto_writer *crypto_writers[MAX_CORES];
 
 
 static void
