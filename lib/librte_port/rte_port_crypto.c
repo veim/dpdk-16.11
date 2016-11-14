@@ -273,6 +273,7 @@ struct rte_port_crypto_reader {
 	struct qa_callbackQueue callbackQ;
 };
 
+static struct rte_port_crypto_reader *crypto_readers[MAX_CORES];
 
 
 /*
@@ -313,10 +314,11 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 		__rte_unused CpaStatus status,
 		__rte_unused CpaBoolean verifyResult)
 {
-
-	struct rte_port_crypto_reader *p =
-		(struct rte_port_crypto_reader *) status;
-	struct qa_callbackQueue *callbackQ = &(p->callbackQueue);
+	uint32_t lcore_id;
+	lcore_id = rte_lcore_id();
+	
+	struct qa_callbackQueue *callbackQ =
+		&(crypto_readers[lcore_id]->callbackQueue);
 
 	/*
 	 * Received a completion from the QA hardware.
@@ -1012,6 +1014,8 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 		printf("Crypto: Failed to allocate all session tables.");
 		return NULL;
 	}
+
+	crypto_readers[port->lcore_id] = port;
 
 	return port;
 }
