@@ -50,6 +50,7 @@ LIBABIVER := 3
 #
 # added for rte_port_crypto
 #
+ICP_ROOT = ICP_ROOT=/QAT/QAT1.6
 INC += $(ICP_ROOT)/quickassist/include
 
 #
