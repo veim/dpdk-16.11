@@ -846,7 +846,7 @@ crypto_encrypt(struct rte_mbuf *rte_buff, struct rte_port_crypto_writer *p)
 }
 
 enum crypto_result
-crypto_decrypt(struct rte_mbuf *rte_buff, struct rte_port_ethdev_writer *p)
+crypto_decrypt(struct rte_mbuf *rte_buff, struct rte_port_crypto_writer *p)
 {
 
 	CpaCySymDpOpData *opData = rte_pktmbuf_mtod_offset(rte_buff, void *,
