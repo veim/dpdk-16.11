@@ -269,7 +269,6 @@ struct rte_port_crypto_reader {
 	void *pPacketIV;
 	CpaPhysicalAddr packetIVPhy;
 	struct lcore_memzone lcoreMemzone;
-	CpaInstanceHandle instanceHandle;
 
 	struct qa_callbackQueue callbackQ;
 };
@@ -314,8 +313,9 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 		__rte_unused CpaStatus status,
 		__rte_unused CpaBoolean verifyResult)
 {
-	uint32_t lcore_id;
-	lcore_id = rte_lcore_id();
+
+	struct rte_port_crypto_reader *p =
+		(struct rte_port_crypto_reader *) status;
 	struct qa_callbackQueue *callbackQ = &(p->callbackQueue);
 
 	/*
