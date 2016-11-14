@@ -300,9 +300,12 @@ struct rte_port_crypto_writer {
 	uint32_t crypto_burst_sz;
 	uint16_t crypto_buf_count;
 	uint64_t bsz_mask;
-	uint8_t port_id;
 
+	uint32_t socket_id;
+	uint32_t lcore_id;
+	uint8_t port_id;
 	uint8_t ec_dc;
+
 	enum cipher_alg cipher;
 	enum hash_alg hasher;
 
@@ -926,9 +929,6 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 			(struct rte_port_crypto_reader_params *) params;
 	struct rte_port_crypto_reader *port;
 
-	CpaStatus status = CPA_STATUS_FAIL;
-	char memzone_name[RTE_MEMZONE_NAMESIZE];
-
 	/* Check input parameters */
 	if (conf == NULL) {
 		RTE_LOG(ERR, PORT, "%s: params is NULL\n", __func__);
@@ -950,12 +950,12 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	port->ec_dc = conf->ec_dc;
 
 	/* Allocate software ring for response messages. */
-	p->callbackQueue.head = 0;
-	p->callbackQueue.tail = 0;
-	p->callbackQueue.numEntries = 0;
-	p->kickFreq = 0;
-	p->qaOutstandingRequests = 0;
-	p->numResponseAttempts = 0;
+	port->callbackQueue.head = 0;
+	port->callbackQueue.tail = 0;
+	port->callbackQueue.numEntries = 0;
+	port->kickFreq = 0;
+	port->qaOutstandingRequests = 0;
+	port->numResponseAttempts = 0;
 
 	/*** deleted many codes, as this is only a reader rather than writer ***/
 
@@ -996,7 +996,7 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 
 	/* If there are no outstanding requests no need to poll, return entry */
 	if (p->qaOutstandingRequests == 0)
-		return entry;
+		return 0;
 
 	if (p->callbackQ.numEntries < CRYPTO_QUEUED_RESP_POLL_THRESHOLD
 			&& p->numResponseAttempts++ % GET_NEXT_RESPONSE_FREQ == 0) {
@@ -1010,6 +1010,7 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 
 	*pkts = (struct rte_mbuf *) entry;
 	//RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(p, pkt_cnt);
+	n_pkts = 0;
 
 	return 1;
 }
