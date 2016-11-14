@@ -305,8 +305,22 @@ struct rte_port_crypto_writer {
 	uint8_t ec_dc;
 	enum cipher_alg cipher;
 	enum hash_alg hasher;
+
+	CpaCySymDpSessionCtx *encryptSessionHandleTbl[NUM_CRYPTO][NUM_HMAC];
+	CpaCySymDpSessionCtx *decryptSessionHandleTbl[NUM_CRYPTO][NUM_HMAC];
+	CpaInstanceHandle instanceHandle;
+	struct qa_callbackQueue callbackQueue;
+	uint64_t qaOutstandingRequests;
+	uint64_t numResponseAttempts;
+	uint8_t kickFreq;
+	void *pPacketIV;
+	CpaPhysicalAddr packetIVPhy;
+	struct lcore_memzone lcoreMemzone;
+
+	struct qa_callbackQueue callbackQ;
 };
 
+static struct rte_port_crypto_writer *crypto_writer[MAX_CORES];
 
 
 static void
@@ -318,7 +332,7 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 	lcore_id = rte_lcore_id();
 
 	struct qa_callbackQueue *callbackQ =
-		&(crypto_readers[lcore_id]->callbackQueue);
+		&(crypto_writers[lcore_id]->callbackQueue);
 
 	/*
 	 * Received a completion from the QA hardware.
@@ -327,7 +341,7 @@ crypto_callback(CpaCySymDpOpData *pOpData,
 	callbackQ->qaCallbackRing[callbackQ->head] = pOpData->pCallbackTag;
 	callbackQ->head++;
 	callbackQ->numEntries++;
-	crypto_readers[lcore_id]->qaOutstandingRequests--;
+	crypto_writers[lcore_id]->qaOutstandingRequests--;
 }
 
 static void
@@ -342,7 +356,7 @@ qa_crypto_callback(CpaCySymDpOpData *pOpData, CpaStatus status,
  * the application. No freeing of previous allocations will occur.
  */
 static void *
-alloc_memzone_region(uint32_t length, struct rte_port_crypto_reader *p)
+alloc_memzone_region(uint32_t length, struct rte_port_crypto_writer *p)
 {
 	char *current_free_addr_ptr = NULL;
 	struct lcore_memzone *lcore_memzone = &(p->lcoreMemzone);
@@ -369,7 +383,7 @@ qa_v2p(void *ptr)
 	const struct rte_memzone *memzone = NULL;
 	uint32_t lcore_id = 0;
 	RTE_LCORE_FOREACH(lcore_id) {
-		memzone = p->lcoreMemzone.memzone;
+		memzone = crypto_writers[lcore_id]->lcoreMemzone.memzone;
 
 		if ((char*) ptr >= (char *) memzone->addr &&
 				(char*) ptr < ((char*) memzone->addr + memzone->len)) {
@@ -454,7 +468,7 @@ initCySymSession(const int pkt_cipher_alg,
 		const CpaCySymCipherDirection crypto_direction,
 		CpaCySymSessionCtx **ppSessionCtx,
 		const CpaInstanceHandle cyInstanceHandle,
-		struct rte_port_crypto_reader *p)
+		struct rte_port_crypto_writer *p)
 {
 	Cpa32U sessionCtxSizeInBytes = 0;
 	CpaStatus status = CPA_STATUS_FAIL;
@@ -681,7 +695,7 @@ initCySymSession(const int pkt_cipher_alg,
 }
 
 static CpaStatus
-initSessionDataTables(struct rte_port_crypto_reader *p)
+initSessionDataTables(struct rte_port_crypto_writer *p)
 {
 	Cpa32U i = 0, j = 0;
 	CpaStatus status = CPA_STATUS_FAIL;
@@ -727,7 +741,7 @@ crypto_init(void)
 
 
 static CpaStatus
-enqueueOp(CpaCySymDpOpData *opData, uint32_t lcore_id)
+enqueueOp(CpaCySymDpOpData *opData, struct rte_port_crypto_writer *p)
 {
 
 	CpaStatus status;
@@ -757,17 +771,14 @@ crypto_flush_tx_queue(uint32_t lcore_id)
 }
 
 enum crypto_result
-crypto_encrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
+crypto_encrypt(struct rte_mbuf *rte_buff, struct rte_port_crypto_writer *p)
 {
 	CpaCySymDpOpData *opData =
 			rte_pktmbuf_mtod_offset(rte_buff, CpaCySymDpOpData *,
 						CRYPTO_OFFSET_TO_OPDATA);
-	uint32_t lcore_id;
 
 	if (unlikely(c >= NUM_CRYPTO || h >= NUM_HMAC))
 		return CRYPTO_RESULT_FAIL;
-
-	lcore_id = rte_lcore_id();
 
 	memset(opData, 0, sizeof(CpaCySymDpOpData));
 
@@ -821,7 +832,7 @@ crypto_encrypt(struct rte_mbuf *rte_buff, enum cipher_alg c, enum hash_alg h)
 		opData->digestResult = rte_buff->buf_physaddr + rte_buff->data_len;
 	}
 
-	if (CPA_STATUS_SUCCESS != enqueueOp(opData, lcore_id)) {
+	if (CPA_STATUS_SUCCESS != enqueueOp(opData, p)) {
 		/*
 		 * Failed to place a packet on the hardware queue.
 		 * Most likely because the QA hardware is busy.
@@ -943,77 +954,20 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	p->qaOutstandingRequests = 0;
 	p->numResponseAttempts = 0;
 
+	/*** deleted many codes, as this is only a reader rather than writer ***/
+
 	/* Initialise and reserve lcore memzone for virt2phys translation */
-	snprintf(memzone_name,
-			RTE_MEMZONE_NAMESIZE,
-			"lcore_%u",
-			p->lcore_id);
-
-	p->lcoreMemzone.memzone = rte_memzone_reserve(
-			memzone_name,
-			LCORE_MEMZONE_SIZE,
-			p->socket_id,
-			0);
-
-	if (NULL == p->lcoreMemzone.memzone) {
-		printf("Crypto: Error allocating memzone on lcore %u\n", p->lcore_id);
-		return -1;
-	}
-	p->lcoreMemzone.next_free_address = p->lcoreMemzone.memzone->addr;
-
-	p->pPacketIV = alloc_memzone_region(IV_LENGTH_16_BYTES, p);
-
-	if (NULL == p->pPacketIV ) {
-		printf("Crypto: Failed to allocate memory for Initialization Vector\n");
-		return -1;
-	}
-
-	memcpy(p->pPacketIV, &g_crypto_hash_keys.iv,
-			IV_LENGTH_16_BYTES);
-
-	p->packetIVPhy = qa_v2p(p->pPacketIV);
-	if (0 == p->packetIVPhy) {
-		printf("Crypto: Invalid physical address for Initialization Vector\n");
-		return -1;
-	}
 
 	/*
 	 * Obtain the instance handle that is mapped to the current lcore.
 	 * This can fail if an instance is not mapped to a bank which has been
 	 * affinitized to the current lcore.
 	 */
-	status = get_crypto_instance_on_core(&(p->instanceHandle), p->lcore_id);
-
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: get_crypto_instance_on_core failed with status: %"PRId32"\n",
-				status);
-		return -1;
-	}
-
-	status = cpaCySymDpRegCbFunc(p->instanceHandle,
-			(CpaCySymDpCbFunc) qa_crypto_callback);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: cpaCySymDpRegCbFunc failed with status: %"PRId32"\n", status);
-		return -1;
-	}
 
 	/*
 	 * Set the address translation callback for virtual to physcial address
 	 * mapping. This will be called by the QAT driver during initialisation only.
 	 */
-	status = cpaCySetAddressTranslation(p->instanceHandle,
-			(CpaVirtualToPhysical) qa_v2p);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: cpaCySetAddressTranslation failed with status: %"PRId32"\n",
-				status);
-		return -1;
-	}
-
-	status = initSessionDataTables(p);
-	if (CPA_STATUS_SUCCESS != status) {
-		printf("Crypto: Failed to allocate all session tables.");
-		return NULL;
-	}
 
 	crypto_readers[port->lcore_id] = port;
 
@@ -1123,6 +1077,88 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->cipher = conf->cipher;
 	port->hasher = conf->hasher;
 
+	/* Allocate software ring for response messages. */
+	p->callbackQueue.head = 0;
+	p->callbackQueue.tail = 0;
+	p->callbackQueue.numEntries = 0;
+	p->kickFreq = 0;
+	p->qaOutstandingRequests = 0;
+	p->numResponseAttempts = 0;
+
+	/* Initialise and reserve lcore memzone for virt2phys translation */
+	snprintf(memzone_name,
+			RTE_MEMZONE_NAMESIZE,
+			"lcore_%u",
+			p->lcore_id);
+
+	p->lcoreMemzone.memzone = rte_memzone_reserve(
+			memzone_name,
+			LCORE_MEMZONE_SIZE,
+			p->socket_id,
+			0);
+
+	if (NULL == p->lcoreMemzone.memzone) {
+		printf("Crypto: Error allocating memzone on lcore %u\n", p->lcore_id);
+		return -1;
+	}
+	p->lcoreMemzone.next_free_address = p->lcoreMemzone.memzone->addr;
+
+	p->pPacketIV = alloc_memzone_region(IV_LENGTH_16_BYTES, p);
+
+	if (NULL == p->pPacketIV ) {
+		printf("Crypto: Failed to allocate memory for Initialization Vector\n");
+		return -1;
+	}
+
+	memcpy(p->pPacketIV, &g_crypto_hash_keys.iv,
+			IV_LENGTH_16_BYTES);
+
+	p->packetIVPhy = qa_v2p(p->pPacketIV);
+	if (0 == p->packetIVPhy) {
+		printf("Crypto: Invalid physical address for Initialization Vector\n");
+		return -1;
+	}
+
+	/*
+	 * Obtain the instance handle that is mapped to the current lcore.
+	 * This can fail if an instance is not mapped to a bank which has been
+	 * affinitized to the current lcore.
+	 */
+	status = get_crypto_instance_on_core(&(p->instanceHandle), p->lcore_id);
+
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: get_crypto_instance_on_core failed with status: %"PRId32"\n",
+				status);
+		return -1;
+	}
+
+	status = cpaCySymDpRegCbFunc(p->instanceHandle,
+			(CpaCySymDpCbFunc) qa_crypto_callback);
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: cpaCySymDpRegCbFunc failed with status: %"PRId32"\n", status);
+		return -1;
+	}
+
+	/*
+	 * Set the address translation callback for virtual to physcial address
+	 * mapping. This will be called by the QAT driver during initialisation only.
+	 */
+	status = cpaCySetAddressTranslation(p->instanceHandle,
+			(CpaVirtualToPhysical) qa_v2p);
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: cpaCySetAddressTranslation failed with status: %"PRId32"\n",
+				status);
+		return -1;
+	}
+
+	status = initSessionDataTables(p);
+	if (CPA_STATUS_SUCCESS != status) {
+		printf("Crypto: Failed to allocate all session tables.");
+		return NULL;
+	}
+
+	crypto_writers[port->lcore_id] = port;
+
 	return port;
 }
 
@@ -1135,11 +1171,11 @@ process_burst(struct rte_port_crypto_writer *p)
 
 	if(p->ec_dc){
 		for(i = 0; i < p->crypto_buf_count; i++)
-			crypto_encrypt(p->crypto_buf[i], p->cipher, p->hasher);
+			crypto_encrypt(p->crypto_buf[i], p);
 	}
 	else{
 		for(i = 0; i < p->crypto_buf_count; i++)
-			crypto_decrypt(p->crypto_buf[i], p->cipher, p->hasher);
+			crypto_decrypt(p->crypto_buf[i], p);
 	}
 
 
