@@ -87,8 +87,8 @@ endif
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
 
 
-#SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += include/*.h
-INC += $(wildcard include_qat/*.h)
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += include_qat/*.h
+#INC += $(wildcard include_qat/*.h)
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
 
 
