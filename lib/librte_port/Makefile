@@ -89,6 +89,7 @@ SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
 
 
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += icp_sal_user.h
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += icp_sal_poll.h
 
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_common.h
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_dh.h
