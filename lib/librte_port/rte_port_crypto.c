@@ -1105,7 +1105,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 
 	if (NULL == p->lcoreMemzone.memzone) {
 		printf("Crypto: Error allocating memzone on lcore %u\n", p->lcore_id);
-		return -1;
+		return NULL;
 	}
 	p->lcoreMemzone.next_free_address = p->lcoreMemzone.memzone->addr;
 
@@ -1113,7 +1113,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 
 	if (NULL == p->pPacketIV ) {
 		printf("Crypto: Failed to allocate memory for Initialization Vector\n");
-		return -1;
+		return NULL;
 	}
 
 	memcpy(p->pPacketIV, &g_crypto_hash_keys.iv,
@@ -1122,7 +1122,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	p->packetIVPhy = qa_v2p(p->pPacketIV);
 	if (0 == p->packetIVPhy) {
 		printf("Crypto: Invalid physical address for Initialization Vector\n");
-		return -1;
+		return NULL;
 	}
 
 	/*
@@ -1135,14 +1135,14 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	if (CPA_STATUS_SUCCESS != status) {
 		printf("Crypto: get_crypto_instance_on_core failed with status: %"PRId32"\n",
 				status);
-		return -1;
+		return NULL;
 	}
 
 	status = cpaCySymDpRegCbFunc(p->instanceHandle,
 			(CpaCySymDpCbFunc) qa_crypto_callback);
 	if (CPA_STATUS_SUCCESS != status) {
 		printf("Crypto: cpaCySymDpRegCbFunc failed with status: %"PRId32"\n", status);
-		return -1;
+		return NULL;
 	}
 
 	/*
@@ -1154,7 +1154,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	if (CPA_STATUS_SUCCESS != status) {
 		printf("Crypto: cpaCySetAddressTranslation failed with status: %"PRId32"\n",
 				status);
-		return -1;
+		return NULL;
 	}
 
 	status = initSessionDataTables(p);
