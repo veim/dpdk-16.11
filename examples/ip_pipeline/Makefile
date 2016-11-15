@@ -33,6 +33,10 @@ ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
 endif
 
+ifeq ($(ICP_ROOT),)
+$(error "Please define ICP_ROOT environment variable")
+endif
+
 # Default target, can be overridden by command line or environment
 RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
@@ -45,7 +49,7 @@ APP = ip_pipeline
 
 VPATH += $(SRCDIR)/pipeline
 
-INC += $(wildcard *.h) $(wildcard pipeline/*.h)
+INC += $(wildcard *.h) $(wildcard pipeline/*.h)  $(ICP_ROOT)/quickassist/include
 
 # all source are stored in SRCS-y
 SRCS-$(CONFIG_RTE_LIBRTE_PIPELINE) := main.c
