@@ -35,6 +35,9 @@
 #define __INCLUDE_PIPELINE_BE_H__
 
 #include <rte_port_ethdev.h>
+
+#include <rte_port_crypto.h>
+
 #include <rte_port_ring.h>
 #include <rte_port_frag.h>
 #include <rte_port_ras.h>
@@ -48,6 +51,9 @@
 
 enum pipeline_port_in_type {
 	PIPELINE_PORT_IN_ETHDEV_READER,
+
+	PIPELINE_PORT_IN_CRYPTO_READER,
+
 	PIPELINE_PORT_IN_RING_READER,
 	PIPELINE_PORT_IN_RING_MULTI_READER,
 	PIPELINE_PORT_IN_RING_READER_IPV4_FRAG,
@@ -62,6 +68,9 @@ struct pipeline_port_in_params {
 	enum pipeline_port_in_type type;
 	union {
 		struct rte_port_ethdev_reader_params ethdev;
+
+		struct rte_port_crypto_reader_params crypto;
+
 		struct rte_port_ring_reader_params ring;
 		struct rte_port_ring_multi_reader_params ring_multi;
 		struct rte_port_ring_reader_ipv4_frag_params ring_ipv4_frag;
@@ -82,6 +91,10 @@ pipeline_port_in_params_convert(struct pipeline_port_in_params  *p)
 	switch (p->type) {
 	case PIPELINE_PORT_IN_ETHDEV_READER:
 		return (void *) &p->params.ethdev;
+
+	case PIPELINE_PORT_IN_CRYPTO_READER:
+		return (void *) &p->params.crypto;
+
 	case PIPELINE_PORT_IN_RING_READER:
 		return (void *) &p->params.ring;
 	case PIPELINE_PORT_IN_RING_MULTI_READER:
@@ -111,6 +124,10 @@ pipeline_port_in_params_get_ops(struct pipeline_port_in_params  *p)
 	switch (p->type) {
 	case PIPELINE_PORT_IN_ETHDEV_READER:
 		return &rte_port_ethdev_reader_ops;
+
+	case PIPELINE_PORT_IN_CRYPTO_READER:
+		return &rte_port_crypto_reader_ops;
+
 	case PIPELINE_PORT_IN_RING_READER:
 		return &rte_port_ring_reader_ops;
 	case PIPELINE_PORT_IN_RING_MULTI_READER:
@@ -137,6 +154,9 @@ pipeline_port_in_params_get_ops(struct pipeline_port_in_params  *p)
 enum pipeline_port_out_type {
 	PIPELINE_PORT_OUT_ETHDEV_WRITER,
 	PIPELINE_PORT_OUT_ETHDEV_WRITER_NODROP,
+
+	PIPELINE_PORT_OUT_CRYPTO_WRITER,
+
 	PIPELINE_PORT_OUT_RING_WRITER,
 	PIPELINE_PORT_OUT_RING_MULTI_WRITER,
 	PIPELINE_PORT_OUT_RING_WRITER_NODROP,
@@ -155,6 +175,9 @@ struct pipeline_port_out_params {
 	union {
 		struct rte_port_ethdev_writer_params ethdev;
 		struct rte_port_ethdev_writer_nodrop_params ethdev_nodrop;
+
+		struct rte_port_crypto_writer_params crypto;
+
 		struct rte_port_ring_writer_params ring;
 		struct rte_port_ring_multi_writer_params ring_multi;
 		struct rte_port_ring_writer_nodrop_params ring_nodrop;
@@ -179,6 +202,10 @@ pipeline_port_out_params_convert(struct pipeline_port_out_params  *p)
 		return (void *) &p->params.ethdev;
 	case PIPELINE_PORT_OUT_ETHDEV_WRITER_NODROP:
 		return (void *) &p->params.ethdev_nodrop;
+
+	case PIPELINE_PORT_OUT_CRYPTO_WRITER:
+		return (void *) &p->params.crypto;
+
 	case PIPELINE_PORT_OUT_RING_WRITER:
 		return (void *) &p->params.ring;
 	case PIPELINE_PORT_OUT_RING_MULTI_WRITER:
@@ -216,6 +243,10 @@ pipeline_port_out_params_get_ops(struct pipeline_port_out_params  *p)
 		return &rte_port_ethdev_writer_ops;
 	case PIPELINE_PORT_OUT_ETHDEV_WRITER_NODROP:
 		return &rte_port_ethdev_writer_nodrop_ops;
+
+	case PIPELINE_PORT_OUT_CRYPTO_WRITER:
+			return &rte_port_crypto_writer_ops;
+
 	case PIPELINE_PORT_OUT_RING_WRITER:
 		return &rte_port_ring_writer_ops;
 	case PIPELINE_PORT_OUT_RING_MULTI_WRITER:

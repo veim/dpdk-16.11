@@ -1924,9 +1924,9 @@ int app_init(struct app_params *app)
 	app_init_mempool(app);
 	app_init_link(app);
 
-	printf("app_init_crypto begin\n");
+	printf("########app_init_crypto begin\n");
 	app_init_crypto(app);
-	printf("app_init_crypto end\n");
+	printf("########app_init_crypto end\n");
 
 
 	app_init_swq(app);
@@ -1945,9 +1945,9 @@ int app_init(struct app_params *app)
 	app_pipeline_type_register(app, &pipeline_firewall);
 	app_pipeline_type_register(app, &pipeline_routing);
 
-	printf("app_init_pipelines begin\n");
+	printf("########app_init_pipelines begin\n");
 	app_init_pipelines(app);
-	printf("app_init_pipelines end\n");
+	printf("########app_init_pipelines end\n");
 
 	app_init_threads(app);
 
