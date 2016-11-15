@@ -137,6 +137,6 @@ struct rte_port_crypto_writer_params {
 };
 
 /** crypto_writer port operations */
-extern struct rte_port_out_ops rte_port_crypot_writer_ops;
+extern struct rte_port_out_ops rte_port_crypto_writer_ops;
 
 #endif /* CRYPTO_H_ */
