@@ -185,7 +185,7 @@ static const struct app_pktq_ecq_in_params default_ecq_in_params = {
     .hasher = HASH_SHA1,
 };
 
-staic const struct app_pktq_ecq_out_params default_ecq_out_params = {
+static const struct app_pktq_ecq_out_params default_ecq_out_params = {
 	.parsed = 0,
 	.burst = 32,
 
@@ -916,7 +916,7 @@ parse_pipeline_pktq_in(struct app_params *app,
 			id = APP_PARAM_ADD(app->hwq_in_params, name);
 			APP_PARAM_ADD_LINK_FOR_RXQ(app, name);
 		} else if (validate_name(name, "ECI", 1) == 0) {
-			type = APP_PKTQ_IN_ECI;
+			type = APP_PKTQ_IN_ECQ;
 			id = APP_PARAM_ADD(app->ec_params, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_IN_SWQ;
@@ -971,7 +971,7 @@ parse_pipeline_pktq_out(struct app_params *app,
 			id = APP_PARAM_ADD(app->hwq_out_params, name);
 			APP_PARAM_ADD_LINK_FOR_TXQ(app, name);
 		} else if (validate_name(name, "ECO", 1) == 0) {
-			type = APP_PKTQ_OUT_ECO;
+			type = APP_PKTQ_OUT_ECQ;
 			id = APP_PARAM_ADD(app->ec_params, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_OUT_SWQ;
@@ -3131,7 +3131,7 @@ save_pipeline_params(struct app_params *app, FILE *f)
 					name = app->hwq_in_params[pp->id].name;
 					break;
 
-				case APP_PKTQ_IN_ECI:
+				case APP_PKTQ_IN_ECQ:
 					name = app->ecq_in_params[pp->id].name;
 					break;
 
@@ -3176,7 +3176,7 @@ save_pipeline_params(struct app_params *app, FILE *f)
 					name = app->hwq_out_params[pp->id].name;
 					break;
 
-				case APP_PKTQ_OUT_ECO:
+				case APP_PKTQ_OUT_ECQ:
 					name = app->ecq_out_params[pp->id].name;
 					break;
 
