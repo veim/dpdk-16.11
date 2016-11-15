@@ -166,36 +166,36 @@ static const struct app_pktq_hwq_out_params default_hwq_out_params = {
 };
 
 static const struct app_pktq_ecq_in_params default_ecq_in_params = {
-	.parsed = 0;
-	.mempool_id = 0; /* Position in the app->mempool_params */
+	.parsed = 0,
+	.mempool_id = 0, /* Position in the app->mempool_params */
 
-	.socket_id = 0;
+	.socket_id = 0,
     /*lcore_id the crypto dev's input pipeline run*/
-    .lcore_id = 1;
+    .lcore_id = 1,
     /** NIC RX port ID */
-    .port_id = 0;
+    .port_id = 0,
     /** encrypto or decrypto flag */
-    .ec_dc = 0;
+    .ec_dc = 0,
 
     /** Recommended burst size to NIC TX queue. The actual burst size can be
     bigger or smaller than this value. */
-    .burst = 32;
+    .burst = 32,
 
-    .cipher = CIPHER_DES_CBC;
-    .hasher = HASH_SHA1;
+    .cipher = CIPHER_DES_CBC,
+    .hasher = HASH_SHA1,
 };
 
 staic const struct app_pktq_ecq_out_params default_ecq_out_params = {
-	.parsed = 0;
-	.burst = 32;
+	.parsed = 0,
+	.burst = 32,
 
-	.socket_id = 0;
+	.socket_id = 0,
 	/*lcore_id the crypto dev's input pipeline run*/
-	.lcore_id = 1;
+	.lcore_id = 1,
 	/** NIC RX port ID */
-	.port_id = 0;
+	.port_id = 0,
 	/** encrypto or decrypto flag */
-	.ec_dc = 0;
+	.ec_dc = 0,
 };
 
 
