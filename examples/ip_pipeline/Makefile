@@ -81,4 +81,20 @@ CFLAGS += -I$(SRCDIR) -I$(SRCDIR)/pipeline
 CFLAGS += -O3
 CFLAGS += $(WERROR_FLAGS) -Wno-error=unused-function -Wno-error=unused-variable
 
+
+# From CRF 1.2 driver, library was renamed to libicp_qa_al.a
+ifneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
+ICP_LIBRARY_PATH = $(ICP_ROOT)/build/icp_qa_al.a
+else
+ICP_LIBRARY_PATH = $(ICP_ROOT)/build/libicp_qa_al.a
+endif
+
+LDLIBS += -L$(ICP_ROOT)/build
+LDLIBS += $(ICP_LIBRARY_PATH) \
+                -lz \
+                -losal \
+                -ladf_proxy \
+                -lcrypto
+
+
 include $(RTE_SDK)/mk/rte.extapp.mk
