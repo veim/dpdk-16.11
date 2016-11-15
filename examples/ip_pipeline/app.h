@@ -66,6 +66,12 @@
 #define APP_LINK_MAX_HWQ_OUT                     128
 #endif
 
+
+#ifndef APP_MAX_ECS
+#define APP_MAX_ECS                      128
+#endif
+
+
 struct app_mempool_params {
 	char *name;
 	uint32_t parsed;
