@@ -1064,6 +1064,124 @@ app_init_link(struct app_params *app)
 	app_check_link(app);
 }
 
+
+
+
+static void
+app_init_crypto(struct app_params *app)
+{
+	uint32_t i;
+
+	for (i = 0; i < app->n_ecs; i++) {
+		printf("app_init_crypto: skip %d\n", i);
+/*		struct app_link_params *p_link = &app->link_params[i];
+		uint32_t link_id, n_hwq_in, n_hwq_out, j;
+		int status;
+
+		sscanf(p_link->name, "LINK%" PRIu32, &link_id);
+		n_hwq_in = app_link_get_n_rxq(app, p_link);
+		n_hwq_out = app_link_get_n_txq(app, p_link);
+		app_init_link_set_config(p_link);
+
+		APP_LOG(app, HIGH, "Initializing %s (%" PRIu32") "
+			"(%" PRIu32 " RXQ, %" PRIu32 " TXQ) ...",
+			p_link->name,
+			p_link->pmd_id,
+			n_hwq_in,
+			n_hwq_out);
+*/
+		/* LINK */
+/*		status = rte_eth_dev_configure(
+			p_link->pmd_id,
+			n_hwq_in,
+			n_hwq_out,
+			&p_link->conf);
+		if (status < 0)
+			rte_panic("%s (%" PRId32 "): "
+				"init error (%" PRId32 ")\n",
+				p_link->name, p_link->pmd_id, status);
+
+		rte_eth_macaddr_get(p_link->pmd_id,
+			(struct ether_addr *) &p_link->mac_addr);
+
+		if (p_link->promisc)
+			rte_eth_promiscuous_enable(p_link->pmd_id);
+
+*/		/* RXQ */
+/*		for (j = 0; j < app->n_pktq_hwq_in; j++) {
+			struct app_pktq_hwq_in_params *p_rxq =
+				&app->hwq_in_params[j];
+			uint32_t rxq_link_id, rxq_queue_id;
+
+			sscanf(p_rxq->name, "RXQ%" PRIu32 ".%" PRIu32,
+				&rxq_link_id, &rxq_queue_id);
+			if (rxq_link_id != link_id)
+				continue;
+
+			status = rte_eth_rx_queue_setup(
+				p_link->pmd_id,
+				rxq_queue_id,
+				p_rxq->size,
+				app_get_cpu_socket_id(p_link->pmd_id),
+				&p_rxq->conf,
+				app->mempool[p_rxq->mempool_id]);
+			if (status < 0)
+				rte_panic("%s (%" PRIu32 "): "
+					"%s init error (%" PRId32 ")\n",
+					p_link->name,
+					p_link->pmd_id,
+					p_rxq->name,
+					status);
+		}
+
+*/		/* TXQ */
+/*		for (j = 0; j < app->n_pktq_hwq_out; j++) {
+			struct app_pktq_hwq_out_params *p_txq =
+				&app->hwq_out_params[j];
+			uint32_t txq_link_id, txq_queue_id;
+
+			sscanf(p_txq->name, "TXQ%" PRIu32 ".%" PRIu32,
+				&txq_link_id, &txq_queue_id);
+			if (txq_link_id != link_id)
+				continue;
+
+			status = rte_eth_tx_queue_setup(
+				p_link->pmd_id,
+				txq_queue_id,
+				p_txq->size,
+				app_get_cpu_socket_id(p_link->pmd_id),
+				&p_txq->conf);
+			if (status < 0)
+				rte_panic("%s (%" PRIu32 "): "
+					"%s init error (%" PRId32 ")\n",
+					p_link->name,
+					p_link->pmd_id,
+					p_txq->name,
+					status);
+		}
+
+*/		/* LINK START */
+/*		status = rte_eth_dev_start(p_link->pmd_id);
+		if (status < 0)
+			rte_panic("Cannot start %s (error %" PRId32 ")\n",
+				p_link->name, status);
+
+*/		/* LINK FILTERS */
+/*		app_link_set_arp_filter(app, p_link);
+		app_link_set_tcp_syn_filter(app, p_link);
+		if (app_link_rss_enabled(p_link))
+			app_link_rss_setup(p_link);
+
+*/		/* LINK UP */
+//		app_link_up_internal(app, p_link);
+	}
+
+//	app_check_link(app);
+}
+
+
+
+
 static void
 app_init_swq(struct app_params *app)
 {
@@ -1805,11 +1923,15 @@ int app_init(struct app_params *app)
 	app_init_eal(app);
 	app_init_mempool(app);
 	app_init_link(app);
+
+	app_init_crypto(app);
+
 	app_init_swq(app);
 	app_init_tm(app);
 	app_init_tap(app);
 	app_init_kni(app);
 	app_init_msgq(app);
+
 
 	app_pipeline_common_cmd_push(app);
 	app_pipeline_thread_cmd_push(app);

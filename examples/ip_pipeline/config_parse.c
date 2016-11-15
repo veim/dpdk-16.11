@@ -47,6 +47,7 @@
 #include <rte_cfgfile.h>
 #include <rte_string_fns.h>
 
+
 #include "app.h"
 #include "parser.h"
 
@@ -163,6 +164,40 @@ static const struct app_pktq_hwq_out_params default_hwq_out_params = {
 		.tx_deferred_start = 0,
 	}
 };
+
+static const struct app_pktq_ecq_in_params default_ecq_in_params = {
+	.parsed = 0;
+	.mempool_id = 0; /* Position in the app->mempool_params */
+
+	.socket_id = 0;
+    /*lcore_id the crypto dev's input pipeline run*/
+    .lcore_id = 1;
+    /** NIC RX port ID */
+    .port_id = 0;
+    /** encrypto or decrypto flag */
+    .ec_dc = 0;
+
+    /** Recommended burst size to NIC TX queue. The actual burst size can be
+    bigger or smaller than this value. */
+    .burst = 32;
+
+    .cipher = CIPHER_DES_CBC;
+    .hasher = HASH_SHA1;
+};
+
+staic const struct app_pktq_ecq_out_params default_ecq_out_params = {
+	.parsed = 0;
+	.burst = 32;
+
+	.socket_id = 0;
+	/*lcore_id the crypto dev's input pipeline run*/
+	.lcore_id = 1;
+	/** NIC RX port ID */
+	.port_id = 0;
+	/** encrypto or decrypto flag */
+	.ec_dc = 0;
+};
+
 
 static const struct app_pktq_swq_params default_swq_params = {
 	.parsed = 0,
@@ -310,6 +345,32 @@ app_print_usage(char *prgname)
 	link_param_pos = APP_PARAM_ADD((app)->link_params, link_name);	\
 	link_param_pos;							\
 })
+
+
+#define APP_PARAM_ADD_CRYPTO_FOR_ECI(app, eci_name)			\
+({									\
+	char ec_name[APP_PARAM_NAME_SIZE];				\
+	ssize_t ec_param_pos;						\
+	uint32_t port_id;					\
+									\
+	sscanf((eci_name), "ECI%" SCNu32, &port_id);\
+	sprintf(ec_name, "EC%" PRIu32, port_id);			\
+	ec_param_pos = APP_PARAM_ADD((app)->ec_params, ec_name);	\
+	ec_param_pos;							\
+})
+
+#define APP_PARAM_ADD_CRYPTO_FOR_ECO(app, txq_name)			\
+({									\
+	char link_name[APP_PARAM_NAME_SIZE];				\
+	ssize_t ec_param_pos;						\
+	uint32_t port_id;					\
+									\
+	sscanf((txq_name), "ECO%" SCNu32, &port_id);\
+	sprintf(link_name, "EC%" PRIu32, port_id);			\
+	ec_param_pos = APP_PARAM_ADD((app)->link_params, ec_name);	\
+	ec_param_pos;							\
+})
+
 
 #define APP_PARAM_ADD_LINK_FOR_TM(app, tm_name)				\
 ({									\
@@ -854,6 +915,9 @@ parse_pipeline_pktq_in(struct app_params *app,
 			type = APP_PKTQ_IN_HWQ;
 			id = APP_PARAM_ADD(app->hwq_in_params, name);
 			APP_PARAM_ADD_LINK_FOR_RXQ(app, name);
+		} else if (validate_name(name, "ECI", 1) == 0) {
+			type = APP_PKTQ_IN_ECI;
+			id = APP_PARAM_ADD(app->ec_params, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_IN_SWQ;
 			id = APP_PARAM_ADD(app->swq_params, name);
@@ -906,6 +970,9 @@ parse_pipeline_pktq_out(struct app_params *app,
 			type = APP_PKTQ_OUT_HWQ;
 			id = APP_PARAM_ADD(app->hwq_out_params, name);
 			APP_PARAM_ADD_LINK_FOR_TXQ(app, name);
+		} else if (validate_name(name, "ECO", 1) == 0) {
+			type = APP_PKTQ_OUT_ECO;
+			id = APP_PARAM_ADD(app->ec_params, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_OUT_SWQ;
 			id = APP_PARAM_ADD(app->swq_params, name);
@@ -2521,6 +2588,10 @@ app_config_parse(struct app_params *app, const char *file_name)
 	APP_PARAM_COUNT(app->link_params, app->n_links);
 	APP_PARAM_COUNT(app->hwq_in_params, app->n_pktq_hwq_in);
 	APP_PARAM_COUNT(app->hwq_out_params, app->n_pktq_hwq_out);
+
+	APP_PARAM_COUNT(app->ecq_in_params, app->n_pktq_ecq_in);
+	APP_PARAM_COUNT(app->ecq_out_params, app->n_pktq_ecq_out);
+
 	APP_PARAM_COUNT(app->swq_params, app->n_pktq_swq);
 	APP_PARAM_COUNT(app->tm_params, app->n_pktq_tm);
 	APP_PARAM_COUNT(app->tap_params, app->n_pktq_tap);
@@ -3059,6 +3130,11 @@ save_pipeline_params(struct app_params *app, FILE *f)
 				case APP_PKTQ_IN_HWQ:
 					name = app->hwq_in_params[pp->id].name;
 					break;
+
+				case APP_PKTQ_IN_ECI:
+					name = app->ecq_in_params[pp->id].name;
+					break;
+
 				case APP_PKTQ_IN_SWQ:
 					name = app->swq_params[pp->id].name;
 					break;
@@ -3085,7 +3161,7 @@ save_pipeline_params(struct app_params *app, FILE *f)
 			fprintf(f, "\n");
 		}
 
-		/* pktq_in */
+		/* pktq_out */
 		if (p->n_pktq_out) {
 			uint32_t j;
 
@@ -3099,6 +3175,11 @@ save_pipeline_params(struct app_params *app, FILE *f)
 				case APP_PKTQ_OUT_HWQ:
 					name = app->hwq_out_params[pp->id].name;
 					break;
+
+				case APP_PKTQ_OUT_ECO:
+					name = app->ecq_out_params[pp->id].name;
+					break;
+
 				case APP_PKTQ_OUT_SWQ:
 					name = app->swq_params[pp->id].name;
 					break;
@@ -3232,6 +3313,17 @@ app_config_init(struct app_params *app)
 		memcpy(&app->hwq_out_params[i],
 			&default_hwq_out_params,
 			sizeof(default_hwq_out_params));
+
+
+	for (i = 0; i < RTE_DIM(app->ecq_in_params); i++)
+		memcpy(&app->ecq_in_params[i],
+			&default_ecq_in_params,
+			sizeof(default_ecq_in_params));
+	for (i = 0; i < RTE_DIM(app->ecq_out_params); i++)
+		memcpy(&app->ecq_out_params[i],
+			&default_ecq_out_params,
+			sizeof(default_ecq_out_params));
+
 
 	for (i = 0; i < RTE_DIM(app->swq_params); i++)
 		memcpy(&app->swq_params[i],

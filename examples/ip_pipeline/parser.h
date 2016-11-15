@@ -39,6 +39,8 @@
 #include <rte_ip.h>
 #include <rte_ether.h>
 
+#include <rte_port_crypto.h>
+
 #define PARSE_DELIMITER				" \f\n\r\t\v"
 
 #define skip_white_spaces(pos)			\

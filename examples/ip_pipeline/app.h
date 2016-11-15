@@ -48,6 +48,10 @@
 #include <rte_kni.h>
 #endif
 
+
+#include <rte_port_crypto.h>
+
+
 #include "cpu_core_map.h"
 #include "pipeline.h"
 
@@ -115,6 +119,56 @@ struct app_pktq_hwq_out_params {
 	uint64_t n_retries;
 	struct rte_eth_txconf conf;
 };
+
+
+struct app_ec_params {
+	char *name;
+	uint32_t parsed;
+//	uint32_t pmd_id; /* Generated based on port mask */
+	uint32_t state; /* DOWN = 0, UP = 1 */
+//	char pci_bdf[APP_LINK_PCI_BDF_SIZE];
+
+//	struct rte_eth_conf conf;
+};
+
+/* added for QAT */
+struct app_pktq_ecq_in_params {
+	char *name;
+	uint32_t parsed;
+	uint32_t mempool_id; /* Position in the app->mempool_params */
+
+	uint32_t socket_id;
+    /*lcore_id the crypto dev's input pipeline run*/
+    uint32_t lcore_id;
+    /** NIC RX port ID */
+    uint8_t port_id;
+    /** encrypto or decrypto flag */
+    uint8_t ec_dc;
+
+    /** Recommended burst size to NIC TX queue. The actual burst size can be
+    bigger or smaller than this value. */
+    uint32_t burst;
+
+    enum cipher_alg cipher;
+    enum hash_alg hasher;
+};
+
+struct app_pktq_ecq_out_params {
+	char *name;
+	uint32_t parsed;
+	uint32_t burst;
+
+	uint32_t socket_id;
+	/*lcore_id the crypto dev's input pipeline run*/
+	uint32_t lcore_id;
+	/** NIC RX port ID */
+	uint8_t port_id;
+	/** encrypto or decrypto flag */
+	uint8_t ec_dc;
+
+};
+
+
 
 struct app_pktq_swq_params {
 	char *name;
@@ -217,6 +271,9 @@ enum app_pktq_in_type {
 	APP_PKTQ_IN_TAP,
 	APP_PKTQ_IN_KNI,
 	APP_PKTQ_IN_SOURCE,
+
+	APP_PKTQ_IN_ECQ,
+	APP_PKTQ_IN_DCQ,
 };
 
 struct app_pktq_in_params {
@@ -231,6 +288,9 @@ enum app_pktq_out_type {
 	APP_PKTQ_OUT_TAP,
 	APP_PKTQ_OUT_KNI,
 	APP_PKTQ_OUT_SINK,
+
+	APP_PKTQ_OUT_ECQ,
+	APP_PKTQ_OUT_DCQ,
 };
 
 struct app_pktq_out_params {
@@ -447,6 +507,10 @@ struct app_eal_params {
 
 #define APP_MAX_HWQ_OUT                 (APP_MAX_LINKS * APP_LINK_MAX_HWQ_OUT)
 
+#ifndef APP_MAX_PKTQ_ECQ
+#define APP_MAX_PKTQ_ECQ                         32
+#endif
+
 #ifndef APP_MAX_PKTQ_SWQ
 #define APP_MAX_PKTQ_SWQ                         256
 #endif
@@ -508,6 +572,11 @@ struct app_params {
 	struct app_link_params link_params[APP_MAX_LINKS];
 	struct app_pktq_hwq_in_params hwq_in_params[APP_MAX_HWQ_IN];
 	struct app_pktq_hwq_out_params hwq_out_params[APP_MAX_HWQ_OUT];
+
+	struct app_ec_params ec_params[APP_MAX_ECS];
+	struct app_pktq_ecq_in_params ecq_in_params[APP_MAX_PKTQ_ECQ];
+	struct app_pktq_ecq_out_params ecq_out_params[APP_MAX_PKTQ_ECQ];
+
 	struct app_pktq_swq_params swq_params[APP_MAX_PKTQ_SWQ];
 	struct app_pktq_tm_params tm_params[APP_MAX_PKTQ_TM];
 	struct app_pktq_tap_params tap_params[APP_MAX_PKTQ_TAP];
@@ -521,6 +590,11 @@ struct app_params {
 	uint32_t n_links;
 	uint32_t n_pktq_hwq_in;
 	uint32_t n_pktq_hwq_out;
+
+	uint32_t n_ecs;
+	uint32_t n_pktq_ecq_in;
+	uint32_t n_pktq_ecq_out;
+
 	uint32_t n_pktq_swq;
 	uint32_t n_pktq_tm;
 	uint32_t n_pktq_tap;
@@ -708,6 +782,14 @@ app_swq_get_readers(struct app_params *app, struct app_pktq_swq_params *swq)
 
 	return n_readers;
 }
+
+
+
+
+
+
+
+
 
 static inline struct app_pipeline_params *
 app_swq_get_reader(struct app_params *app,
