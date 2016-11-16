@@ -128,5 +128,22 @@ DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_kni
 endif
 
 
+ifeq ($(ICP_ROOT),)
+$(error "Please define ICP_ROOT environment variable")
+endif
+
+fneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
+ICP_LIBRARY_PATH = $(ICP_ROOT)/build/icp_qa_al.a
+else
+ICP_LIBRARY_PATH = $(ICP_ROOT)/build/libicp_qa_al.a
+endif
+
+LDLIBS += -L$(ICP_ROOT)/build
+LDLIBS += $(ICP_LIBRARY_PATH) \
+                -lz \
+                -losal \
+                -ladf_proxy \
+                -lcrypto
+
 
 include $(RTE_SDK)/mk/rte.lib.mk
