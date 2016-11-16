@@ -132,7 +132,7 @@ ifeq ($(ICP_ROOT),)
 $(error "Please define ICP_ROOT environment variable")
 endif
 
-fneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
+ifneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
 ICP_LIBRARY_PATH = $(ICP_ROOT)/build/icp_qa_al.a
 else
 ICP_LIBRARY_PATH = $(ICP_ROOT)/build/libicp_qa_al.a
