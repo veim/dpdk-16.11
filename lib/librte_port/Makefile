@@ -87,31 +87,6 @@ endif
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
 
 
-
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += icp_sal_user.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += icp_sal_poll.h
-
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_common.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_dh.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_drbg.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_dsa.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ec.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ecdh.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ecdsa.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_im.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_key.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_ln.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_nrbg.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_prime.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_rsa.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_sym_dp.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_cy_sym.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_dc_dp.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_dc.h
-
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa_types.h
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += cpa.h
-
 #INC += $(wildcard include_qat/*.h)
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
 
@@ -131,19 +106,6 @@ endif
 ifeq ($(ICP_ROOT),)
 $(error "Please define ICP_ROOT environment variable")
 endif
-
-ifneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
-ICP_LIBRARY_PATH = $(ICP_ROOT)/build/icp_qa_al.a
-else
-ICP_LIBRARY_PATH = $(ICP_ROOT)/build/libicp_qa_al.a
-endif
-
-LDLIBS += -L$(ICP_ROOT)/build
-LDLIBS += $(ICP_LIBRARY_PATH) \
-                -lz \
-                -losal \
-                -ladf_proxy \
-                -lcrypto
 
 
 include $(RTE_SDK)/mk/rte.lib.mk
