@@ -165,7 +165,7 @@ static const struct app_pktq_hwq_out_params default_hwq_out_params = {
 	}
 };
 
-static const struct app_pktq_eci_params default_ecq_in_params = {
+static const struct app_pktq_eci_params default_eci_params = {
 	.parsed = 0,
 //	.mempool_id = 0, /* Position in the app->mempool_params */
 
@@ -184,7 +184,7 @@ static const struct app_pktq_eci_params default_ecq_in_params = {
 //    .hasher = HASH_SHA1,
 };
 
-static const struct app_pktq_eco_params default_ecq_out_params = {
+static const struct app_pktq_eco_params default_eco_params = {
 	.parsed = 0,
 	.burst = 32,
 
@@ -3131,7 +3131,7 @@ save_pipeline_params(struct app_params *app, FILE *f)
 					break;
 
 				case APP_PKTQ_IN_ECQ:
-					name = app->ecq_in_params[pp->id].name;
+					name = app->eci_params[pp->id].name;
 					break;
 
 				case APP_PKTQ_IN_SWQ:
@@ -3176,7 +3176,7 @@ save_pipeline_params(struct app_params *app, FILE *f)
 					break;
 
 				case APP_PKTQ_OUT_ECQ:
-					name = app->ecq_out_params[pp->id].name;
+					name = app->eco_params[pp->id].name;
 					break;
 
 				case APP_PKTQ_OUT_SWQ:
@@ -3314,14 +3314,14 @@ app_config_init(struct app_params *app)
 			sizeof(default_hwq_out_params));
 
 
-	for (i = 0; i < RTE_DIM(app->ecq_in_params); i++)
-		memcpy(&app->ecq_in_params[i],
-			&default_ecq_in_params,
-			sizeof(default_ecq_in_params));
-	for (i = 0; i < RTE_DIM(app->ecq_out_params); i++)
-		memcpy(&app->ecq_out_params[i],
-			&default_ecq_out_params,
-			sizeof(default_ecq_out_params));
+	for (i = 0; i < RTE_DIM(app->eci_params); i++)
+		memcpy(&app->eci_params[i],
+			&default_eci_params,
+			sizeof(default_eci_params));
+	for (i = 0; i < RTE_DIM(app->eco_params); i++)
+		memcpy(&app->eco_params[i],
+			&default_eco_params,
+			sizeof(default_eco_params));
 
 
 	for (i = 0; i < RTE_DIM(app->swq_params); i++)
