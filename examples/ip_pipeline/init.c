@@ -50,7 +50,7 @@
 #include <rte_eal.h>
 #include <rte_malloc.h>
 
-#include <rte_cryptodev.h>
+//#include <rte_cryptodev.h>
 
 #include "app.h"
 #include "pipeline.h"
@@ -1154,7 +1154,7 @@ generate_random_key(uint8_t *key, unsigned length)
 
 /* Check if device has to be HW/SW or any */
 static int
-check_type(struct app_ecry_param *p_ecry, struct rte_cryptodev_info *dev_info)
+check_type(struct app_ecry_params *p_ecry, struct rte_cryptodev_info *dev_info)
 {
 	if (p_ecry->dev_type == CDEV_TYPE_HW &&
 			(dev_info->feature_flags & RTE_CRYPTODEV_FF_HW_ACCELERATED))
@@ -1215,7 +1215,7 @@ app_init_ecry(struct app_params *app)
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
 
-		struct app_ecry_param *p_ecry = &app->ecry_params[cdev_id];
+		struct app_ecry_params *p_ecry = &app->ecry_params[cdev_id];
 
 		/* Set cipher parameters */
 		if (p_ecry->chain_type == CIPHER_HASH ||
