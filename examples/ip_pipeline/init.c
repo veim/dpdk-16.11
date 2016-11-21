@@ -1198,7 +1198,7 @@ app_init_ecry(struct app_params *app)
 	fill_supported_algorithm_tables();
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
-			enabled_cdev_count < app->n_ecrys; cdev_id++) {
+			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
 		printf("app_init_ecry: Initializing %d\n", i);
 
 		struct rte_cryptodev_qp_conf qp_conf;
