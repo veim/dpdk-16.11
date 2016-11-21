@@ -606,8 +606,8 @@ struct app_eal_params {
 #endif
 
 
-char supported_auth_algo[RTE_CRYPTO_AUTH_LIST_END];
-char supported_cipher_algo[RTE_CRYPTO_CIPHER_LIST_END];
+char supported_auth_algo[RTE_CRYPTO_AUTH_LIST_END][MAX_STR_LEN];
+char supported_cipher_algo[RTE_CRYPTO_CIPHER_LIST_END][MAX_STR_LEN];
 
 
 struct app_params {
