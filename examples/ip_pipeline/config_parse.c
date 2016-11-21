@@ -916,7 +916,7 @@ parse_pipeline_pktq_in(struct app_params *app,
 			APP_PARAM_ADD_LINK_FOR_RXQ(app, name);
 		} else if (validate_name(name, "ECI", 1) == 0) {
 			type = APP_PKTQ_IN_ECQ;
-			id = APP_PARAM_ADD(app->ec_params, name);
+			id = APP_PARAM_ADD(app->eci_params, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_IN_SWQ;
 			id = APP_PARAM_ADD(app->swq_params, name);
@@ -971,7 +971,7 @@ parse_pipeline_pktq_out(struct app_params *app,
 			APP_PARAM_ADD_LINK_FOR_TXQ(app, name);
 		} else if (validate_name(name, "ECO", 1) == 0) {
 			type = APP_PKTQ_OUT_ECQ;
-			id = APP_PARAM_ADD(app->ec_params, name);
+			id = APP_PARAM_ADD(app->eco_params, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_OUT_SWQ;
 			id = APP_PARAM_ADD(app->swq_params, name);
