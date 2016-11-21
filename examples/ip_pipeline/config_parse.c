@@ -348,26 +348,26 @@ app_print_usage(char *prgname)
 
 #define APP_PARAM_ADD_CRYPTO_FOR_ECI(app, eci_name)			\
 ({									\
-	char ec_name[APP_PARAM_NAME_SIZE];				\
-	ssize_t ec_param_pos;						\
-	uint32_t port_id;					\
+	char ecry_name[APP_PARAM_NAME_SIZE];				\
+	ssize_t ecry_param_pos;						\
+	uint32_t cdev_id;					\
 									\
-	sscanf((eci_name), "ECI%" SCNu32, &port_id);\
-	sprintf(ec_name, "EC%" PRIu32, port_id);			\
-	ec_param_pos = APP_PARAM_ADD((app)->ec_params, ec_name);	\
-	ec_param_pos;							\
+	sscanf((eci_name), "ECI%" SCNu32, &cdev_id);\
+	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);			\
+	ecry_param_pos = APP_PARAM_ADD((app)->ecry_params, ecry_name);	\
+	ecry_param_pos;							\
 })
 
-#define APP_PARAM_ADD_CRYPTO_FOR_ECO(app, txq_name)			\
+#define APP_PARAM_ADD_CRYPTO_FOR_ECO(app, eco_name)			\
 ({									\
-	char link_name[APP_PARAM_NAME_SIZE];				\
-	ssize_t ec_param_pos;						\
-	uint32_t port_id;					\
+	char ecry_name[APP_PARAM_NAME_SIZE];				\
+	ssize_t ecry_param_pos;						\
+	uint32_t cdev_id;					\
 									\
-	sscanf((txq_name), "ECO%" SCNu32, &port_id);\
-	sprintf(link_name, "EC%" PRIu32, port_id);			\
-	ec_param_pos = APP_PARAM_ADD((app)->link_params, ec_name);	\
-	ec_param_pos;							\
+	sscanf((eco_name), "ECO%" SCNu32, &cdev_id);\
+	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);			\
+	ecry_param_pos = APP_PARAM_ADD((app)->ecry_params, ecry_name);	\
+	ecry_param_pos;							\
 })
 
 
