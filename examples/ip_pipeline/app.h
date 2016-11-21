@@ -206,13 +206,13 @@ struct app_pktq_eco_params {
 	uint32_t parsed;
 	uint32_t burst;
 
-	uint32_t socket_id;
-	/*lcore_id the crypto dev's input pipeline run*/
-	uint32_t lcore_id;
-	/** NIC RX port ID */
-	uint8_t port_id;
+//	uint32_t socket_id;
+	/* */
+	uint32_t cdev_id;
+	/* */
+	uint8_t qp_id;
 	/** encrypto or decrypto flag */
-	uint8_t ec_dc;
+//	uint8_t ec_dc;
 
 };
 
