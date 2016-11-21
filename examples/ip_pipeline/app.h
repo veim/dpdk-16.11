@@ -651,8 +651,8 @@ struct app_params {
 	uint32_t n_pktq_hwq_out;
 
 	uint32_t n_ecrys;
-	uint32_t n_pktq_ecq_in;
-	uint32_t n_pktq_ecq_out;
+	uint32_t n_pktq_eci;
+	uint32_t n_pktq_eco;
 
 	uint32_t n_pktq_swq;
 	uint32_t n_pktq_tm;
