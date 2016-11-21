@@ -1188,7 +1188,7 @@ app_init_ecry(struct app_params *app)
 		printf("No crypto devices available\n");
 		return -1;
 	}
-	if (cdev_count < app->n_ecrys;) {
+	if (cdev_count < app->n_ecrys) {
 		printf("No enough crypto devices available\n");
 		return -1;
 	}
@@ -1198,7 +1198,7 @@ app_init_ecry(struct app_params *app)
 	fill_supported_algorithm_tables();
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
-			enabled_cdev_count < napp->n_ecrys; cdev_id++) {
+			enabled_cdev_count < app->n_ecrys; cdev_id++) {
 		printf("app_init_ecry: Initializing %d\n", i);
 
 		struct rte_cryptodev_qp_conf qp_conf;
