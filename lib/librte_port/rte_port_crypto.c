@@ -95,8 +95,6 @@ struct rte_port_crypto_reader {
 	uint16_t op_burst_sz;
 
 	struct rte_crypto_op *op_buffer[MAX_PKT_BURST];
-
-
 };
 
 static void *
@@ -137,7 +135,7 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 	uint16_t nb_rx = 0;
 	uint16_t i;
 	uint32_t n_pkts_need = (n_pkts < p->op_burst_sz) ? n_pkts : p->op_burst_sz;
-	if()
+
 	nb_rx = rte_cryptodev_dequeue_burst(p->dev_id, p->qp_id,
 			p->op_buffer, n_pkts_need);
 
@@ -198,18 +196,29 @@ static int rte_port_crypto_reader_stats_read(void *port,
 
 #endif
 
+
+struct crypto_key {
+	uint8_t *data;
+	uint32_t length;
+	phys_addr_t phys_addr;
+};
+
 struct rte_port_crypto_writer {
 	struct rte_port_out_stats stats;
 
 	uint8_t dev_id;
 	uint16_t qp_id;
 
+	uint16_t block_size;
 	unsigned digest_length;
 	uint32_t op_burst_sz;
 //	uint64_t bsz_mask
 
 	struct rte_mempool *op_pool;
 	struct rte_cryptodev_sym_session *session;
+
+	struct crypto_key iv;
+	struct crypto_key aad;
 
 	uint8_t do_cipher;
 	uint8_t do_hash;
@@ -414,22 +423,22 @@ rte_port_crypto_writer_tx_bulk(void *port,
 			((pkts_mask & bsz_mask) ^ bsz_mask);
 
 	if (expr == 0) {
-//		uint64_t n_pkts = __builtin_popcountll(pkts_mask);
-//		uint32_t n_pkts_ok;
-//		enum crypto_result ret;
+		uint64_t n_pkts = __builtin_popcountll(pkts_mask);
+		uint32_t n_pkts_ok;
+		enum crypto_result ret;
 		if (crypto_buf_count)
 			enqueue_burst(p);
 
-/*		RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(p, n_pkts);
+		RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(p, n_pkts);
 		ret = crypto_encrypt(p->crypto_buf, p->cipher, p->hasher);
-*/
-/*		RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(p, n_pkts - n_pkts_ok);
+
+		RTE_PORT_CRYPTO_WRITER_STATS_PKTS_DROP_ADD(p, n_pkts - n_pkts_ok);
 		for ( ; n_pkts_ok < n_pkts; n_pkts_ok++) {
 			struct rte_mbuf *pkt = pkts[n_pkts_ok];
 
 			rte_pktmbuf_free(pkt);
 		}
-*//*	} else {
+	} else {
 		for ( ; pkts_mask; ) {
 			uint32_t pkt_index = __builtin_ctzll(pkts_mask);
 			uint64_t pkt_mask = 1LLU << pkt_index;
