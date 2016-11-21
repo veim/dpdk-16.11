@@ -127,39 +127,77 @@ struct app_pktq_hwq_out_params {
 };
 
 
-struct app_ec_params {
+enum cdev_type {
+	CDEV_TYPE_ANY,
+	CDEV_TYPE_HW,
+	CDEV_TYPE_SW
+};
+
+enum ecry_chain_type {
+	CIPHER_HASH,
+	HASH_CIPHER,
+	CIPHER_ONLY,
+	HASH_ONLY
+};
+
+struct crypto_key {
+	uint8_t *data;
+	uint32_t length;
+	phys_addr_t phys_addr;
+};
+
+struct app_ecry_params {
 	char *name;
 	uint32_t parsed;
 //	uint32_t pmd_id; /* Generated based on port mask */
 	uint32_t state; /* DOWN = 0, UP = 1 */
-//	char pci_bdf[APP_LINK_PCI_BDF_SIZE];
+	char pci_bdf[APP_LINK_PCI_BDF_SIZE];
 
-//	struct rte_eth_conf conf;
+	enum cdev_type dev_type;
+	unsigned sessionless:1;
+
+	enum ecry_chain_type chain_type;
+
+	struct rte_crypto_sym_xform cipher_xform;
+	unsigned ckey_param;
+	int ckey_random_size;
+	struct crypto_key iv;
+	unsigned iv_param;
+	int iv_random_size;
+
+	struct rte_crypto_sym_xform auth_xform;
+	uint8_t akay_param;
+	int akey_random_size;
+	struct crypto_key aad;
+	unsigned aad_param;
+	int aad_random_size;
+
+	uint16_t block_size;
+	char string_type[MAX_STR_LEN];
 };
 
 /* added for QAT */
-struct app_pktq_ecq_in_params {
+struct app_pktq_eci_params {
 	char *name;
 	uint32_t parsed;
-	uint32_t mempool_id; /* Position in the app->mempool_params */
+//	uint32_t mempool_id; /* Position in the app->mempool_params */
 
-	uint32_t socket_id;
-    /*lcore_id the crypto dev's input pipeline run*/
-    uint32_t lcore_id;
-    /** NIC RX port ID */
-    uint8_t port_id;
+    /* */
+    uint8_t cdev_id;
+    /*  */
+    uint16_t qp_id;
     /** encrypto or decrypto flag */
-    uint8_t ec_dc;
+//    uint8_t ec_dc;
 
     /** Recommended burst size to NIC TX queue. The actual burst size can be
     bigger or smaller than this value. */
     uint32_t burst;
 
-    enum cipher_alg cipher;
-    enum hash_alg hasher;
+//    enum cipher_alg cipher;
+//    enum hash_alg hasher;
 };
 
-struct app_pktq_ecq_out_params {
+struct app_pktq_eco_params {
 	char *name;
 	uint32_t parsed;
 	uint32_t burst;
@@ -272,14 +310,15 @@ struct app_msgq_params {
 
 enum app_pktq_in_type {
 	APP_PKTQ_IN_HWQ,
+
+	APP_PKTQ_IN_ECQ,
+	APP_PKTQ_IN_DCQ,
+
 	APP_PKTQ_IN_SWQ,
 	APP_PKTQ_IN_TM,
 	APP_PKTQ_IN_TAP,
 	APP_PKTQ_IN_KNI,
 	APP_PKTQ_IN_SOURCE,
-
-	APP_PKTQ_IN_ECQ,
-	APP_PKTQ_IN_DCQ,
 };
 
 struct app_pktq_in_params {
@@ -289,14 +328,15 @@ struct app_pktq_in_params {
 
 enum app_pktq_out_type {
 	APP_PKTQ_OUT_HWQ,
+
+	APP_PKTQ_OUT_ECQ,
+	APP_PKTQ_OUT_DCQ,
+
 	APP_PKTQ_OUT_SWQ,
 	APP_PKTQ_OUT_TM,
 	APP_PKTQ_OUT_TAP,
 	APP_PKTQ_OUT_KNI,
 	APP_PKTQ_OUT_SINK,
-
-	APP_PKTQ_OUT_ECQ,
-	APP_PKTQ_OUT_DCQ,
 };
 
 struct app_pktq_out_params {
@@ -561,6 +601,11 @@ struct app_eal_params {
 #define APP_THREAD_HEADROOM_STATS_COLLECT        1
 #endif
 
+
+supported_auth_algo[RTE_CRYPTO_AUTH_LIST_END];
+supported_cipher_algo[RTE_CRYPTO_CIPHER_LIST_END];
+
+
 struct app_params {
 	/* Config */
 	char app_name[APP_APPNAME_SIZE];
@@ -570,8 +615,12 @@ struct app_params {
 	const char *output_file;
 	const char *preproc;
 	const char *preproc_args;
+
 	uint64_t port_mask;
 	uint32_t log_level;
+
+	uint8_t enabled_cdevs[RTE_CRYPTO_MAX_DEVS] = {0};
+	uint32_t enabled_cdev_count;
 
 	struct app_eal_params eal_params;
 	struct app_mempool_params mempool_params[APP_MAX_MEMPOOLS];
@@ -579,9 +628,9 @@ struct app_params {
 	struct app_pktq_hwq_in_params hwq_in_params[APP_MAX_HWQ_IN];
 	struct app_pktq_hwq_out_params hwq_out_params[APP_MAX_HWQ_OUT];
 
-	struct app_ec_params ec_params[APP_MAX_ECS];
-	struct app_pktq_ecq_in_params ecq_in_params[APP_MAX_PKTQ_ECQ];
-	struct app_pktq_ecq_out_params ecq_out_params[APP_MAX_PKTQ_ECQ];
+	struct app_ecry_params ecry_params[APP_MAX_ECS];
+	struct app_pktq_eci_params eci_params[APP_MAX_PKTQ_ECQ];
+	struct app_pktq_eco_params eco_params[APP_MAX_PKTQ_ECQ];
 
 	struct app_pktq_swq_params swq_params[APP_MAX_PKTQ_SWQ];
 	struct app_pktq_tm_params tm_params[APP_MAX_PKTQ_TM];
@@ -597,7 +646,7 @@ struct app_params {
 	uint32_t n_pktq_hwq_in;
 	uint32_t n_pktq_hwq_out;
 
-	uint32_t n_ecs;
+	uint32_t n_ecrys;
 	uint32_t n_pktq_ecq_in;
 	uint32_t n_pktq_ecq_out;
 
@@ -764,6 +813,8 @@ app_rxq_get_readers(struct app_params *app, struct app_pktq_hwq_in_params *rxq)
 	return n_readers;
 }
 
+
+
 static inline uint32_t
 app_swq_get_readers(struct app_params *app, struct app_pktq_swq_params *swq)
 {
@@ -788,14 +839,6 @@ app_swq_get_readers(struct app_params *app, struct app_pktq_swq_params *swq)
 
 	return n_readers;
 }
-
-
-
-
-
-
-
-
 
 static inline struct app_pipeline_params *
 app_swq_get_reader(struct app_params *app,
@@ -1084,6 +1127,9 @@ app_txq_get_writers(struct app_params *app, struct app_pktq_hwq_out_params *txq)
 
 	return n_writers;
 }
+
+
+
 
 static inline uint32_t
 app_swq_get_writers(struct app_params *app, struct app_pktq_swq_params *swq)
@@ -1414,6 +1460,43 @@ app_get_link_for_txq(struct app_params *app, struct app_pktq_hwq_out_params *p)
 
 	return &app->link_params[link_param_idx];
 }
+
+
+/* simulate app_get_link_for_txq for crypto dev*/
+static inline struct app_ecry_params *
+app_get_ecry_for_eci(struct app_params *app, struct app_pktq_eci_params *p)
+{
+	char ecry_name[APP_PARAM_NAME_SIZE];
+	ssize_t ecry_param_idx;
+	uint32_t cdev_id, qp_id;
+
+	sscanf(p->name, "ECI%" SCNu32 ".%" SCNu32,
+		&cdev_id, &qp_id);
+	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);
+	ecry_param_idx = APP_PARAM_FIND(app->ecry_params, ecry_name);
+	APP_CHECK((ecry_param_idx >= 0),
+		"Cannot find %s for %s", ecry_name, p->name);
+
+	return &app->ecry_params[ecry_param_idx];
+}
+
+static inline struct app_ecry_params *
+app_get_ecry_for_eco(struct app_params *app, struct app_pktq_eco_params *p)
+{
+	char ecry_name[APP_PARAM_NAME_SIZE];
+	ssize_t ecry_param_idx;
+	uint32_t cdev_id, qp_id;
+
+	sscanf(p->name, "ECO%" SCNu32 ".%" SCNu32,
+		&cdev_id, &qp_id);
+	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);
+	ecry_param_idx = APP_PARAM_FIND(app->ecry_params, ecry_name);
+	APP_CHECK((ecry_param_idx >= 0),
+		"Cannot find %s for %s", ecry_name, p->name);
+
+	return &app->ecry_params[ecry_param_idx];
+}
+
 
 static inline struct app_link_params *
 app_get_link_for_tm(struct app_params *app, struct app_pktq_tm_params *p_tm)

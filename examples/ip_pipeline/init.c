@@ -1065,127 +1065,417 @@ app_init_link(struct app_params *app)
 }
 
 
-
-
+/* following funcs are used for crypto dev init */
 static void
-app_init_crypto(struct app_params *app)
+fill_supported_algorithm_tables(struct app_params *app)
 {
-	uint32_t i;
+	unsigned i;
 
-	for (i = 0; i < app->n_ecs; i++) {
-		printf("app_init_crypto: skip %d\n", i);
+	for (i = 0; i < RTE_CRYPTO_AUTH_LIST_END; i++)
+		strcpy(supported_auth_algo[i], "NOT_SUPPORTED");
 
-		op_pool = rte_crypto_op_pool_create("crypto_op_pool",
-				RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0,
-				rte_socket_id());
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_AES_GCM], "AES_GCM");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_AES_GMAC], "AES_GMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_MD5_HMAC], "MD5_HMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_MD5], "MD5");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_NULL], "NULL");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_AES_XCBC_MAC],
+		"AES_XCBC_MAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA1_HMAC], "SHA1_HMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA1], "SHA1");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA224_HMAC], "SHA224_HMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA224], "SHA224");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA256_HMAC], "SHA256_HMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA256], "SHA256");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA384_HMAC], "SHA384_HMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA384], "SHA384");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA512_HMAC], "SHA512_HMAC");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SHA512], "SHA512");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_SNOW3G_UIA2], "SNOW3G_UIA2");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_ZUC_EIA3], "ZUC_EIA3");
+	strcpy(supported_auth_algo[RTE_CRYPTO_AUTH_KASUMI_F9], "KASUMI_F9");
 
+	for (i = 0; i < RTE_CRYPTO_CIPHER_LIST_END; i++)
+		strcpy(supported_cipher_algo[i], "NOT_SUPPORTED");
 
-/*		struct app_link_params *p_link = &app->link_params[i];
-		uint32_t link_id, n_hwq_in, n_hwq_out, j;
-		int status;
-
-		sscanf(p_link->name, "LINK%" PRIu32, &link_id);
-		n_hwq_in = app_link_get_n_rxq(app, p_link);
-		n_hwq_out = app_link_get_n_txq(app, p_link);
-		app_init_link_set_config(p_link);
-
-		APP_LOG(app, HIGH, "Initializing %s (%" PRIu32") "
-			"(%" PRIu32 " RXQ, %" PRIu32 " TXQ) ...",
-			p_link->name,
-			p_link->pmd_id,
-			n_hwq_in,
-			n_hwq_out);
-*/
-		/* LINK */
-/*		status = rte_eth_dev_configure(
-			p_link->pmd_id,
-			n_hwq_in,
-			n_hwq_out,
-			&p_link->conf);
-		if (status < 0)
-			rte_panic("%s (%" PRId32 "): "
-				"init error (%" PRId32 ")\n",
-				p_link->name, p_link->pmd_id, status);
-
-		rte_eth_macaddr_get(p_link->pmd_id,
-			(struct ether_addr *) &p_link->mac_addr);
-
-		if (p_link->promisc)
-			rte_eth_promiscuous_enable(p_link->pmd_id);
-
-*/		/* RXQ */
-/*		for (j = 0; j < app->n_pktq_hwq_in; j++) {
-			struct app_pktq_hwq_in_params *p_rxq =
-				&app->hwq_in_params[j];
-			uint32_t rxq_link_id, rxq_queue_id;
-
-			sscanf(p_rxq->name, "RXQ%" PRIu32 ".%" PRIu32,
-				&rxq_link_id, &rxq_queue_id);
-			if (rxq_link_id != link_id)
-				continue;
-
-			status = rte_eth_rx_queue_setup(
-				p_link->pmd_id,
-				rxq_queue_id,
-				p_rxq->size,
-				app_get_cpu_socket_id(p_link->pmd_id),
-				&p_rxq->conf,
-				app->mempool[p_rxq->mempool_id]);
-			if (status < 0)
-				rte_panic("%s (%" PRIu32 "): "
-					"%s init error (%" PRId32 ")\n",
-					p_link->name,
-					p_link->pmd_id,
-					p_rxq->name,
-					status);
-		}
-
-*/		/* TXQ */
-/*		for (j = 0; j < app->n_pktq_hwq_out; j++) {
-			struct app_pktq_hwq_out_params *p_txq =
-				&app->hwq_out_params[j];
-			uint32_t txq_link_id, txq_queue_id;
-
-			sscanf(p_txq->name, "TXQ%" PRIu32 ".%" PRIu32,
-				&txq_link_id, &txq_queue_id);
-			if (txq_link_id != link_id)
-				continue;
-
-			status = rte_eth_tx_queue_setup(
-				p_link->pmd_id,
-				txq_queue_id,
-				p_txq->size,
-				app_get_cpu_socket_id(p_link->pmd_id),
-				&p_txq->conf);
-			if (status < 0)
-				rte_panic("%s (%" PRIu32 "): "
-					"%s init error (%" PRId32 ")\n",
-					p_link->name,
-					p_link->pmd_id,
-					p_txq->name,
-					status);
-		}
-
-*/		/* LINK START */
-/*		status = rte_eth_dev_start(p_link->pmd_id);
-		if (status < 0)
-			rte_panic("Cannot start %s (error %" PRId32 ")\n",
-				p_link->name, status);
-
-*/		/* LINK FILTERS */
-/*		app_link_set_arp_filter(app, p_link);
-		app_link_set_tcp_syn_filter(app, p_link);
-		if (app_link_rss_enabled(p_link))
-			app_link_rss_setup(p_link);
-
-*/		/* LINK UP */
-//		app_link_up_internal(app, p_link);
-	}
-
-//	app_check_link(app);
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_AES_CBC], "AES_CBC");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_AES_CTR], "AES_CTR");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_AES_GCM], "AES_GCM");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_NULL], "NULL");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_SNOW3G_UEA2], "SNOW3G_UEA2");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_ZUC_EEA3], "ZUC_EEA3");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_KASUMI_F8], "KASUMI_F8");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_3DES_CTR], "3DES_CTR");
+	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_3DES_CBC], "3DES_CBC");
 }
 
+static inline int
+check_supported_size(uint16_t length, uint16_t min, uint16_t max,
+		uint16_t increment)
+{
+	uint16_t supp_size;
 
+	/* Single value */
+	if (increment == 0) {
+		if (length == min)
+			return 0;
+		else
+			return -1;
+	}
+
+	/* Range of values */
+	for (supp_size = min; supp_size <= max; supp_size += increment) {
+		if (length == supp_size)
+			return 0;
+	}
+
+	return -1;
+}
+
+/** Generate random key */
+static void
+generate_random_key(uint8_t *key, unsigned length)
+{
+	int fd;
+	int ret;
+
+	fd = open("/dev/urandom", O_RDONLY);
+	if (fd < 0)
+		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");
+
+	ret = read(fd, key, length);
+	close(fd);
+
+	if (ret != (signed)length)
+		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");
+}
+
+/* Check if device has to be HW/SW or any */
+static int
+check_type(struct app_ecry_param *p_ecry, struct rte_cryptodev_info *dev_info)
+{
+	if (p_ecry->dev_type == CDEV_TYPE_HW &&
+			(dev_info->feature_flags & RTE_CRYPTODEV_FF_HW_ACCELERATED))
+		return 0;
+	if (p_ecry->dev_type == CDEV_TYPE_SW &&
+			!(dev_info->feature_flags & RTE_CRYPTODEV_FF_HW_ACCELERATED))
+		return 0;
+	if (p_ecry->dev_type == CDEV_TYPE_ANY)
+		return 0;
+
+	return -1;
+}
+
+/* key part of Initialization for crypto dev */
+static void
+app_init_ecry(struct app_params *app)
+{
+	unsigned i, cdev_id, cdev_count = 0;
+	const struct rte_cryptodev_capabilities *cap;
+	enum rte_crypto_auth_algorithm cap_auth_algo;
+	enum rte_crypto_auth_algorithm opt_auth_algo;
+	enum rte_crypto_cipher_algorithm cap_cipher_algo;
+	enum rte_crypto_cipher_algorithm opt_cipher_algo;
+
+	uint32_t n_eci, n_eco;
+
+	int retval;
+
+	cdev_count = rte_cryptodev_count();
+	if (cdev_count == 0) {
+		printf("No crypto devices available\n");
+		return -1;
+	}
+	if (cdev_count < app->n_ecrys;) {
+		printf("No enough crypto devices available\n");
+		return -1;
+	}
+
+	app->enabled_cdev_count = 0;
+
+	fill_supported_algorithm_tables(app);
+
+	for (cdev_id = 0; cdev_id < cdev_count &&
+			enabled_cdev_count < napp->n_ecrys; cdev_id++) {
+		printf("app_init_ecry: Initializing %d\n", i);
+
+		struct rte_cryptodev_qp_conf qp_conf;
+		struct rte_cryptodev_info dev_info;
+
+		struct rte_cryptodev_config conf = {
+			.nb_queue_pairs = 1,
+			.socket_id = SOCKET_ID_ANY,
+			.session_mp = {
+				.nb_objs = 2048,
+				.cache_size = 64
+			}
+		};
+
+		rte_cryptodev_info_get(cdev_id, &dev_info);
+
+		struct app_ecry_param *p_ecry = &app->ecry_params[cdev_id];
+
+		/* Set cipher parameters */
+		if (p_ecry->chain_type == CIPHER_HASH ||
+				p_ecry->chain_type == HASH_CIPHER ||
+				p_ecry->chain_type == CIPHER_ONLY) {
+
+			/* Check if device supports cipher algo */
+			i = 0;
+			opt_cipher_algo = p_ecry->cipher_xform.cipher.algo;
+			cap = &dev_info.capabilities[i];
+			while (cap->op != RTE_CRYPTO_OP_TYPE_UNDEFINED) {
+				cap_cipher_algo = cap->sym.cipher.algo;
+				if (cap->sym.xform_type ==
+						RTE_CRYPTO_SYM_XFORM_CIPHER) {
+					if (cap_cipher_algo == opt_cipher_algo) {
+						if (check_type(p_ecry, &dev_info) == 0)
+							break;
+					}
+				}
+				cap = &dev_info.capabilities[++i];
+			}
+
+			if (cap->op == RTE_CRYPTO_OP_TYPE_UNDEFINED) {
+				printf("Algorithm %s not supported by cryptodev %u"
+					" or device not of preferred type (%s)\n",
+					supported_cipher_algo[opt_cipher_algo],
+					cdev_id,
+					p_ecry->string_type);
+				continue;
+			}
+
+			p_ecry->block_size = cap->sym.cipher.block_size;
+
+			/*
+			 * Check if length of provided IV is supported
+			 * by the algorithm chosen.
+			 */
+			if (p_ecry->iv_param) {
+				if (check_supported_size(p_ecry->iv.length,
+						cap->sym.cipher.iv_size.min,
+						cap->sym.cipher.iv_size.max,
+						cap->sym.cipher.iv_size.increment)
+							!= 0) {
+					printf("Unsupported IV length\n");
+					return -1;
+				}
+			/*
+			 * Check if length of IV to be randomly generated
+			 * is supported by the algorithm chosen.
+			 */
+			} else if (p_ecry->iv_random_size != -1) {
+				if (check_supported_size(p_ecry->iv_random_size,
+						cap->sym.cipher.iv_size.min,
+						cap->sym.cipher.iv_size.max,
+						cap->sym.cipher.iv_size.increment)
+							!= 0) {
+					printf("Unsupported IV length\n");
+					return -1;
+				}
+				p_ecry->iv.length = p_ecry->iv_random_size;
+			/* No size provided, use minimum size. */
+			} else
+				p_ecry->iv.length = cap->sym.cipher.iv_size.min;
+
+			/*
+			 * Check if length of provided cipher key is supported
+			 * by the algorithm chosen.
+			 */
+			if (p_ecry->ckey_param) {
+				if (check_supported_size(
+						p_ecry->cipher_xform.cipher.key.length,
+						cap->sym.cipher.key_size.min,
+						cap->sym.cipher.key_size.max,
+						cap->sym.cipher.key_size.increment)
+							!= 0) {
+					printf("Unsupported cipher key length\n");
+					return -1;
+				}
+			/*
+			 * Check if length of the cipher key to be randomly generated
+			 * is supported by the algorithm chosen.
+			 */
+			} else if (p_ecry->ckey_random_size != -1) {
+				if (check_supported_size(p_ecry->ckey_random_size,
+						cap->sym.cipher.key_size.min,
+						cap->sym.cipher.key_size.max,
+						cap->sym.cipher.key_size.increment)
+							!= 0) {
+					printf("Unsupported cipher key length\n");
+					return -1;
+				}
+				p_ecry->cipher_xform.cipher.key.length =
+							p_ecry->ckey_random_size;
+			/* No size provided, use minimum size. */
+			} else
+				p_ecry->cipher_xform.cipher.key.length =
+						cap->sym.cipher.key_size.min;
+
+			if (!p_ecry->ckey_param)
+				generate_random_key(
+					p_ecry->cipher_xform.cipher.key.data,
+					p_ecry->cipher_xform.cipher.key.length);
+
+		}
+
+		/* Set auth parameters */
+		if (p_ecry->chain_type == CIPHER_HASH ||
+				p_ecry->chain_type == HASH_CIPHER ||
+				p_ecry->chain_type == HASH_ONLY) {
+
+			/* Check if device supports auth algo */
+			i = 0;
+			opt_auth_algo = p_ecry->auth_xform.auth.algo;
+			cap = &dev_info.capabilities[i];
+			while (cap->op != RTE_CRYPTO_OP_TYPE_UNDEFINED) {
+				cap_auth_algo = cap->sym.auth.algo;
+				if ((cap->sym.xform_type == RTE_CRYPTO_SYM_XFORM_AUTH) &&
+						(cap_auth_algo == opt_auth_algo) &&
+						(check_type(p_ecry, &dev_info) == 0)) {
+					break;
+				}
+				cap = &dev_info.capabilities[++i];
+			}
+
+			if (cap->op == RTE_CRYPTO_OP_TYPE_UNDEFINED) {
+				printf("Algorithm %s not supported by cryptodev %u"
+					" or device not of preferred type (%s)\n",
+					supported_auth_algo[opt_auth_algo],
+					cdev_id,
+					p_ecry->string_type);
+				continue;
+			}
+
+			p_ecry->block_size = cap->sym.auth.block_size;
+
+			/*
+			 * Check if length of provided AAD is supported
+			 * by the algorithm chosen.
+			 */
+			if (p_ecry->aad_param) {
+				if (check_supported_size(p_ecry->aad.length,
+						cap->sym.auth.aad_size.min,
+						cap->sym.auth.aad_size.max,
+						cap->sym.auth.aad_size.increment)
+							!= 0) {
+					printf("Unsupported AAD length\n");
+					return -1;
+				}
+			/*
+			 * Check if length of AAD to be randomly generated
+			 * is supported by the algorithm chosen.
+			 */
+			} else if (p_ecry->aad_random_size != -1) {
+				if (check_supported_size(p_ecry->aad_random_size,
+						cap->sym.auth.aad_size.min,
+						cap->sym.auth.aad_size.max,
+						cap->sym.auth.aad_size.increment)
+							!= 0) {
+					printf("Unsupported AAD length\n");
+					return -1;
+				}
+				p_ecry->aad.length = p_ecry->aad_random_size;
+			/* No size provided, use minimum size. */
+			} else
+				p_ecry->aad.length = cap->sym.auth.aad_size.min;
+
+			p_ecry->auth_xform.auth.add_auth_data_length =
+						p_ecry->aad.length;
+
+			/*
+			 * Check if length of provided auth key is supported
+			 * by the algorithm chosen.
+			 */
+			if (p_ecry->akey_param) {
+				if (check_supported_size(
+						p_ecry->auth_xform.auth.key.length,
+						cap->sym.auth.key_size.min,
+						cap->sym.auth.key_size.max,
+						cap->sym.auth.key_size.increment)
+							!= 0) {
+					printf("Unsupported auth key length\n");
+					return -1;
+				}
+			/*
+			 * Check if length of the auth key to be randomly generated
+			 * is supported by the algorithm chosen.
+			 */
+			} else if (p_ecry->akey_random_size != -1) {
+				if (check_supported_size(p_ecry->akey_random_size,
+						cap->sym.auth.key_size.min,
+						cap->sym.auth.key_size.max,
+						cap->sym.auth.key_size.increment)
+							!= 0) {
+					printf("Unsupported auth key length\n");
+					return -1;
+				}
+				p_ecry->auth_xform.auth.key.length =
+							p_ecry->akey_random_size;
+			/* No size provided, use minimum size. */
+			} else
+				p_ecry->auth_xform.auth.key.length =
+						cap->sym.auth.key_size.min;
+
+			if (!p_ecry->akey_param)
+				generate_random_key(
+					p_ecry->auth_xform.auth.key.data,
+					p_ecry->auth_xform.auth.key.length);
+
+			/* Check if digest size is supported by the algorithm. */
+			if (p_ecry->digest_size != -1) {
+				if (check_supported_size(p_ecry->digest_size,
+						cap->sym.auth.digest_size.min,
+						cap->sym.auth.digest_size.max,
+						cap->sym.auth.digest_size.increment)
+							!= 0) {
+					printf("Unsupported digest length\n");
+					return -1;
+				}
+				p_ecry->auth_xform.auth.digest_length =
+						p_ecry->digest_size;
+			/* No size provided, use minimum size. */
+			} else
+				p_ecry->auth_xform.auth.digest_length =
+						cap->sym.auth.digest_size.min;
+		}
+
+		/* begin to init crypto dev actually */
+		retval = rte_cryptodev_configure(cdev_id, &conf);
+		if (retval < 0) {
+			printf("Failed to configure cryptodev %u", cdev_id);
+			return -1;
+		}
+
+		qp_conf.nb_descriptors = 2048;
+
+		/* init for rx/tx queue of crypto dev */
+		retval = rte_cryptodev_queue_pair_setup(cdev_id, 0, &qp_conf,
+				SOCKET_ID_ANY);
+		if (retval < 0) {
+			printf("Failed to setup queue pair %u on cryptodev %u",
+					0, cdev_id);
+			return -1;
+		}
+
+		retval = rte_cryptodev_start(cdev_id);
+		if (retval < 0) {
+			printf("Failed to start device %u: error %d\n",
+					cdev_id, retval);
+			return -1;
+		}
+
+		l2fwd_enabled_crypto_mask |= (1 << cdev_id);
+
+		app->enabled_cdevs[cdev_id] = 1;
+		app->enabled_cdev_count++;
+/*
+		op_pool = rte_crypto_op_pool_create("ecry_op_pool",
+				RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0,
+				rte_socket_id());
+*/
+	}
+}
 
 
 static void
@@ -1456,11 +1746,9 @@ void app_pipeline_params_get(struct app_params *app,
 	uint32_t i;
 
 	snprintf(p_out->name, PIPELINE_NAME_SIZE, "%s", p_in->name);
-
 	snprintf(p_out->type, PIPELINE_TYPE_SIZE, "%s", p_in->type);
 
 	p_out->socket_id = (int) p_in->socket_id;
-
 	p_out->log_level = app->log_level;
 
 	/* pktq_in */
@@ -1488,6 +1776,25 @@ void app_pipeline_params_get(struct app_params *app,
 			out->burst_size = p_hwq_in->burst;
 			break;
 		}
+
+		case APP_PKTQ_IN_ECQ:
+		{
+			struct app_pktq_eci_params *p_eci =
+				&app->eci_params[in->id];
+			struct app_ecry_params *p_ecry =
+				app_get_cdev_for_eci(app, p_eci);
+
+			uint32_t cdev_id, qp_id;
+			sscanf(p_eci->name, "ECI%" SCNu32 ".%" SCNu32, &cdev_id, &qp_id);
+
+			out->type = PIPELINE_PORT_IN_CRYPTO_READER;
+			out->params.crypto.dev_id = p_ecry->cdev_id;
+			out->params.crypto.qp_id = qp_id;
+			out->params.crypto.op_burst_sz = p_eci->burst;
+			out->burst_size = p_eci->burst;
+			break;
+		}
+
 		case APP_PKTQ_IN_SWQ:
 		{
 			struct app_pktq_swq_params *swq_params = &app->swq_params[in->id];
@@ -1628,6 +1935,27 @@ void app_pipeline_params_get(struct app_params *app,
 			}
 			break;
 		}
+
+		case APP_PKTQ_OUT_ECQ:
+		{
+			struct app_pktq_eci_params *p_eci =
+				&app->eci_params[in->id];
+			struct app_ecry_params *p_ecry =
+				app_get_cdev_for_eci(app, p_eci);
+
+			uint32_t cdev_id, qp_id;
+			sscanf(p_eci->name, "ECO%" SCNu32 ".%" SCNu32, &cdev_id, &qp_id);
+			struct rte_port_crypto_writer_params *params =
+				&out->params.crypto;
+
+			out->type = PIPELINE_PORT_OUT_CRYPTO_READER;
+			params->dev_id = p_ecry->cdev_id;
+			params->qp_id = qp_id;
+			params->op_burst_sz = p_eci->burst;
+			//out->burst_size = p_eci->burst;
+			break;
+		}
+
 		case APP_PKTQ_OUT_SWQ:
 		{
 			struct app_pktq_swq_params *swq_params = &app->swq_params[in->id];
@@ -1930,10 +2258,9 @@ int app_init(struct app_params *app)
 	app_init_mempool(app);
 	app_init_link(app);
 
-	printf("########app_init_crypto begin\n");
-	app_init_crypto(app);
-	printf("########app_init_crypto end\n");
-
+	printf("########app_init_ecry begin\n");
+	app_init_ecry(app);
+	printf("########app_init_ecry end\n");
 
 	app_init_swq(app);
 	app_init_tm(app);
