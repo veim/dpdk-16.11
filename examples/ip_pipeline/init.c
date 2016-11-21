@@ -1067,7 +1067,7 @@ app_init_link(struct app_params *app)
 
 /* following funcs are used for crypto dev init */
 static void
-fill_supported_algorithm_tables(struct app_params *app)
+fill_supported_algorithm_tables()
 {
 	unsigned i;
 
@@ -1193,7 +1193,7 @@ app_init_ecry(struct app_params *app)
 
 	app->enabled_cdev_count = 0;
 
-	fill_supported_algorithm_tables(app);
+	fill_supported_algorithm_tables();
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			enabled_cdev_count < napp->n_ecrys; cdev_id++) {

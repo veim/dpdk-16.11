@@ -48,7 +48,7 @@
 #include <rte_kni.h>
 #endif
 
-
+#include <rte_cryptodev.h>
 #include <rte_port_crypto.h>
 
 
