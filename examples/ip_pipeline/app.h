@@ -623,7 +623,7 @@ struct app_params {
 	uint64_t port_mask;
 	uint32_t log_level;
 
-	uint8_t enabled_cdevs[RTE_CRYPTO_MAX_DEVS] = {0};
+	uint8_t enabled_cdevs[RTE_CRYPTO_MAX_DEVS]; //= {0};
 	uint32_t enabled_cdev_count;
 
 	struct app_eal_params eal_params;
