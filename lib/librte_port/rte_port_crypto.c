@@ -464,7 +464,7 @@ rte_port_crypto_writer_flush(void *port)
 	struct rte_port_crypto_writer *p =
 		(struct rte_port_crypto_writer *) port;
 
-	if (p->crypto_buf_count > 0)
+	if (p->nb_ops > 0)
 		enqueue_burst(p);
 
 	return 0;
