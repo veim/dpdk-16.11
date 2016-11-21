@@ -39,9 +39,8 @@
  #include "rte_port.h"
 
 
-/* Pass Labels/Values to crypto units */
+/* Pass Labels/Values to crypto units *//*
 enum cipher_alg {
-	/* Option to not do any cryptography */
 	NO_CIPHER,
 	CIPHER_DES,
 	CIPHER_DES_CBC,
@@ -54,7 +53,6 @@ enum cipher_alg {
 };
 
 enum hash_alg {
-	/* Option to not do any hash */
 	NO_HASH,
 	HASH_MD5,
 	HASH_SHA1,
@@ -67,73 +65,56 @@ enum hash_alg {
 	HASH_AES_XCBC_96,
 	HASH_KASUMI_F9,
 	NUM_HMAC,
-};
+};*/
 
 /* Return value from crypto_{encrypt/decrypt} */
-enum crypto_result {
+//enum crypto_result {
 	/* Packet was successfully put into crypto queue */
-	CRYPTO_RESULT_IN_PROGRESS,
+//	CRYPTO_RESULT_IN_PROGRESS,
 	/* Cryptography has failed in some way */
-	CRYPTO_RESULT_FAIL,
-};
+//	CRYPTO_RESULT_FAIL,
+//};
 
-struct rte_port_crypto_writer;
-struct rte_port_crypto_reader;
-
-extern enum crypto_result crypto_encrypt(struct rte_mbuf *pkt,
-	struct rte_port_crypto_writer *p);
-extern enum crypto_result crypto_decrypt(struct rte_mbuf *pkt,
-	struct rte_port_crypto_writer *p);
-
-extern int crypto_init(void);
-
-//extern int per_core_crypto_init(uint32_t lcore_id);
-
-extern void crypto_exit(void);
-
-extern void *crypto_get_next_response(void);
-
-extern void crypto_flush_tx_queue(struct rte_port_crypto_writer *p);
 
 
 /** crypto_reader port parameters */
 struct rte_port_crypto_reader_params {
-   /*socket_id the crypto dev attached*/
-   uint32_t socket_id;
 
-   /*lcore_id the crypto dev's input pipeline run*/
-   uint32_t lcore_id;
+   /*  */
+   uint8_t dev_id;
+   uint16_t qp_id;
 
-   /** NIC RX port ID */
-   uint8_t port_id;
-
+   uint16_t op_burst_sz;
+   
    /** encrypto or decrypto flag */
-   uint8_t ec_dc;
+//   uint8_t ec_dc;
 };
 
 /** crypto_reader port operations */
 extern struct rte_port_in_ops rte_port_crypto_reader_ops;
 
+
+
 /** crypto_writer port parameters */
 struct rte_port_crypto_writer_params {
-   /*socket_id the crypto dev attached*/
-   uint32_t socket_id;
+   /* */
+   uint8_t dev_id;
+   /**   */
+   uint16_t qp_id;
 
-   /*lcore_id the crypto dev's input pipeline run*/
-   uint32_t lcore_id;
+   unsigned digest_length;
 
-   /** NIC RX port ID */
-   uint8_t port_id;
+   struct rte_mempool *op_pool;
+   struct rte_cryptodev_sym_session *session;
 
-   /** encrypto or decrypto flag */
-   uint8_t ec_dc;
+   uint8_t do_cipher;
+   uint8_t do_hash;
+   uint8_t hash_verify;
+   enum rte_crypto_cipher_algorithm cipher_algo;
+   enum rte_crypto_auth_algorithm auth_algo;
+   enum rte_crypto_op_type op_type;
 
-   /** Recommended burst size to NIC TX queue. The actual burst size can be
-   bigger or smaller than this value. */
-   uint32_t crypto_burst_sz;
-
-   enum cipher_alg cipher;
-   enum hash_alg hasher;
+   uint32_t op_burst_sz;
 };
 
 /** crypto_writer port operations */

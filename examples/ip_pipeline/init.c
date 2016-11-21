@@ -1074,6 +1074,12 @@ app_init_crypto(struct app_params *app)
 
 	for (i = 0; i < app->n_ecs; i++) {
 		printf("app_init_crypto: skip %d\n", i);
+
+		op_pool = rte_crypto_op_pool_create("crypto_op_pool",
+				RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0,
+				rte_socket_id());
+
+
 /*		struct app_link_params *p_link = &app->link_params[i];
 		uint32_t link_id, n_hwq_in, n_hwq_out, j;
 		int status;
