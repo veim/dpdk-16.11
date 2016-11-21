@@ -1169,7 +1169,7 @@ check_type(struct app_ecry_params *p_ecry, struct rte_cryptodev_info *dev_info)
 }
 
 /* key part of Initialization for crypto dev */
-static void
+static int
 app_init_ecry(struct app_params *app)
 {
 	unsigned i, cdev_id, cdev_count = 0;
@@ -1477,6 +1477,8 @@ app_init_ecry(struct app_params *app)
 				rte_socket_id());
 */
 	}
+
+	return 0;
 }
 
 
