@@ -96,6 +96,9 @@ DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) := lib/librte_eal
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_mbuf
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_mempool
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_ether
+
+DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_cryptodev
+
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_ip_frag
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_sched
 ifeq ($(CONFIG_RTE_LIBRTE_KNI),y)
