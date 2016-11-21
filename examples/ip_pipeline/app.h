@@ -146,6 +146,8 @@ struct crypto_key {
 	phys_addr_t phys_addr;
 };
 
+#define MAX_STR_LEN 32
+
 struct app_ecry_params {
 	char *name;
 	uint32_t parsed;
