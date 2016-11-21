@@ -1067,7 +1067,7 @@ app_init_link(struct app_params *app)
 
 /* following funcs are used for crypto dev init */
 static void
-fill_supported_algorithm_tables()
+fill_supported_algorithm_tables(void)
 {
 	unsigned i;
 
