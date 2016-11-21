@@ -153,6 +153,8 @@ struct app_ecry_params {
 	uint32_t state; /* DOWN = 0, UP = 1 */
 	char pci_bdf[APP_LINK_PCI_BDF_SIZE];
 
+	uint32_t mempool_id;
+
 	enum cdev_type dev_type;
 	unsigned sessionless:1;
 

@@ -59,6 +59,8 @@
 #include <rte_string_fns.h>
 
 
+#include <rte_pci.h>
+#include <rte_ip.h>
 #include <rte_crypto.h>
 #include <rte_cryptodev.h>
 
@@ -134,9 +136,10 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 
 	uint16_t nb_rx = 0;
 	uint16_t i;
-
+	uint32_t n_pkts_need = (n_pkts < p->op_burst_sz) ? n_pkts : p->op_burst_sz;
+	if()
 	nb_rx = rte_cryptodev_dequeue_burst(p->dev_id, p->qp_id,
-			p->op_buffer, p->op_burst_sz);
+			p->op_buffer, n_pkts_need);
 
 	for (i = 0; i < nb_rx; i++) {
 		pkts[i] = p->op_buffer[i]->sym->m_src;
@@ -268,7 +271,7 @@ enqueue_burst(struct rte_port_crypto_writer *p)
 	uint32_t nb_tx;
 
 	nb_tx = rte_cryptodev_enqueue_burst(p->dev_id, p->qp_id,
-			 p->crypto_ops, p->nb_ops);
+			 p->op_buffer, p->nb_ops);
 
 //	RTE_PORT_ETHDEV_WRITER_STATS_PKTS_DROP_ADD(p, p->nb_ops - nb_tx);
 	if (unlikely(nb_tx < p->nb_ops)) {
@@ -287,11 +290,11 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	struct rte_port_crypto_writer *p =
 		(struct rte_port_crypto_writer *) port;
 
-	if(port->nb_ops >= port->op_burst_sz)
+	if(p->nb_ops >= p->op_burst_sz)
 		return 0;
 
-	port->op_buffer[port->nb_ops++] = rte_crypto_op_alloc(
-			port->op_pool, port->op_type);
+	p->op_buffer[p->nb_ops++] = rte_crypto_op_alloc(
+			p->op_pool, p->op_type);
 
 	struct ether_hdr *eth_hdr;
 	struct ipv4_hdr *ip_hdr;
@@ -315,11 +318,11 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	/* Zero pad data to be crypto'd so it is block aligned */
 	data_len  = rte_pktmbuf_data_len(pkt) - ipdata_offset;
 
-	if (port->do_hash && port->hash_verify)
-		data_len -= port->digest_length;
+	if (p->do_hash && p->hash_verify)
+		data_len -= p->digest_length;
 
-	pad_len = data_len % port->block_size ? port->block_size -
-			(data_len % port->block_size) : 0;
+	pad_len = data_len % p->block_size ? p->block_size -
+			(data_len % p->block_size) : 0;
 
 	if (pad_len) {
 		padding = rte_pktmbuf_append(pkt, pad_len);
@@ -331,27 +334,27 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	}
 
 	/* Set crypto operation data parameters */
-	struct rte_crypto_op *op = port->op_buffer[port->nb_ops - 1];
-	rte_crypto_op_attach_sym_session(op, port->session);
+	struct rte_crypto_op *op = p->op_buffer[p->nb_ops - 1];
+	rte_crypto_op_attach_sym_session(op, p->session);
 
-	if (port->do_hash) {
-		if (!port->hash_verify) {
+	if (p->do_hash) {
+		if (!p->hash_verify) {
 			/* Append space for digest to end of packet */
 			op->sym->auth.digest.data = (uint8_t *)rte_pktmbuf_append(pkt,
-					port->digest_length);
+					p->digest_length);
 		} else {
 			op->sym->auth.digest.data = rte_pktmbuf_mtod(pkt,
 					uint8_t *) + ipdata_offset + data_len;
 		}
 
 		op->sym->auth.digest.phys_addr = rte_pktmbuf_mtophys_offset(pkt,
-				rte_pktmbuf_pkt_len(pkt) - port->digest_length);
-		op->sym->auth.digest.length = port->digest_length;
+				rte_pktmbuf_pkt_len(pkt) - p->digest_length);
+		op->sym->auth.digest.length = p->digest_length;
 
 		/* For wireless algorithms, offset/length must be in bits */
-		if (port->auth_algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 ||
-				port->auth_algo == RTE_CRYPTO_AUTH_KASUMI_F9 ||
-				port->auth_algo == RTE_CRYPTO_AUTH_ZUC_EIA3) {
+		if (p->auth_algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 ||
+				p->auth_algo == RTE_CRYPTO_AUTH_KASUMI_F9 ||
+				p->auth_algo == RTE_CRYPTO_AUTH_ZUC_EIA3) {
 			op->sym->auth.data.offset = ipdata_offset << 3;
 			op->sym->auth.data.length = data_len << 3;
 		} else {
@@ -359,22 +362,22 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 			op->sym->auth.data.length = data_len;
 		}
 
-		if (port->aad.length) {
-			op->sym->auth.aad.data = port->aad.data;
-			op->sym->auth.aad.phys_addr = port->aad.phys_addr;
-			op->sym->auth.aad.length = port->aad.length;
+		if (p->aad.length) {
+			op->sym->auth.aad.data = p->aad.data;
+			op->sym->auth.aad.phys_addr = p->aad.phys_addr;
+			op->sym->auth.aad.length = p->aad.length;
 		}
 	}
 
-	if (port->do_cipher) {
-		op->sym->cipher.iv.data = port->iv.data;
-		op->sym->cipher.iv.phys_addr = port->iv.phys_addr;
-		op->sym->cipher.iv.length = port->iv.length;
+	if (p->do_cipher) {
+		op->sym->cipher.iv.data = p->iv.data;
+		op->sym->cipher.iv.phys_addr = p->iv.phys_addr;
+		op->sym->cipher.iv.length = p->iv.length;
 
 		/* For wireless algorithms, offset/length must be in bits */
-		if (port->cipher_algo == RTE_CRYPTO_CIPHER_SNOW3G_UEA2 ||
-				port->cipher_algo == RTE_CRYPTO_CIPHER_KASUMI_F8 ||
-				port->cipher_algo == RTE_CRYPTO_CIPHER_ZUC_EEA3) {
+		if (p->cipher_algo == RTE_CRYPTO_CIPHER_SNOW3G_UEA2 ||
+				p->cipher_algo == RTE_CRYPTO_CIPHER_KASUMI_F8 ||
+				p->cipher_algo == RTE_CRYPTO_CIPHER_ZUC_EEA3) {
 			op->sym->cipher.data.offset = ipdata_offset << 3;
 			op->sym->cipher.data.length = data_len << 3;
 		} else {
@@ -386,12 +389,12 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	op->sym->m_src = pkt;
 
 //	qconf = &lcore_queue_conf[lcore_id];
-//	len = qconf->op_buf[port->dev_id].len;
-//	qconf->op_buf[port->dev_id].buffer[len] = op;
+//	len = qconf->op_buf[p->dev_id].len;
+//	qconf->op_buf[p->dev_id].buffer[len] = op;
 //	len++;
 
-	if (port->nb_ops >= p->op_burst_sz)
-		enqueue_burst(port);
+	if (p->nb_ops >= p->op_burst_sz)
+		enqueue_burst(p);
 
 	return 0;
 }
