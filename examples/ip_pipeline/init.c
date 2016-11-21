@@ -1179,7 +1179,7 @@ app_init_ecry(struct app_params *app)
 	enum rte_crypto_cipher_algorithm cap_cipher_algo;
 	enum rte_crypto_cipher_algorithm opt_cipher_algo;
 
-	uint32_t n_eci, n_eco;
+//	uint32_t n_eci, n_eco;
 
 	int retval;
 
@@ -1792,7 +1792,8 @@ void app_pipeline_params_get(struct app_params *app,
 			sscanf(p_eci->name, "ECI%" SCNu32 ".%" SCNu32, &cdev_id, &qp_id);
 
 			out->type = PIPELINE_PORT_IN_CRYPTO_READER;
-			out->params.crypto.dev_id = p_ecry->cdev_id;
+//			out->params.crypto.dev_id = p_ecry->pmd_id;
+			out->params.crypto.dev_id = cdev_id;
 			out->params.crypto.qp_id = qp_id;
 			out->params.crypto.op_burst_sz = p_eci->burst;
 			out->burst_size = p_eci->burst;
@@ -1952,8 +1953,9 @@ void app_pipeline_params_get(struct app_params *app,
 			struct rte_port_crypto_writer_params *params =
 				&out->params.crypto;
 
-			out->type = PIPELINE_PORT_OUT_CRYPTO_READER;
-			params->dev_id = p_ecry->cdev_id;
+			out->type = PIPELINE_PORT_OUT_CRYPTO_WRITER;
+//			params->dev_id = p_ecry->cdev_id;
+			params->dev_id = cdev_id;
 			params->qp_id = qp_id;
 			params->op_burst_sz = p_eci->burst;
 			//out->burst_size = p_eci->burst;

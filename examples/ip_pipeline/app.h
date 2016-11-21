@@ -151,7 +151,7 @@ struct crypto_key {
 struct app_ecry_params {
 	char *name;
 	uint32_t parsed;
-//	uint32_t pmd_id; /* Generated based on port mask */
+	uint32_t pmd_id; /* Generated based on port mask */
 	uint32_t state; /* DOWN = 0, UP = 1 */
 	char pci_bdf[APP_LINK_PCI_BDF_SIZE];
 
