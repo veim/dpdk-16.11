@@ -36,7 +36,8 @@
 
  #include <stdint.h>
 
- #include "rte_port.h"
+#include <rte_crypto_sym.h>
+#include "rte_port.h"
 
 
 /* Pass Labels/Values to crypto units *//*
@@ -85,7 +86,7 @@ struct rte_port_crypto_reader_params {
    uint16_t qp_id;
 
    uint16_t op_burst_sz;
-   
+
    /** encrypto or decrypto flag */
 //   uint8_t ec_dc;
 };
