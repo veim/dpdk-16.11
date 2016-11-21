@@ -135,12 +135,12 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 	uint16_t nb_rx = 0;
 	uint16_t i;
 
-	nb_rx = rte_cryptodev_dequeue_burst(port->dev_id, port->qp_id,
-			port->op_buffer, port->op_burst_sz);
+	nb_rx = rte_cryptodev_dequeue_burst(p->dev_id, p->qp_id,
+			p->op_buffer, p->op_burst_sz);
 
 	for (i = 0; i < nb_rx; i++) {
-		pkts[i] = port->op_buffer[i]->sym->m_src;
-		rte_crypto_op_free(port->op_buffer[i]);
+		pkts[i] = p->op_buffer[i]->sym->m_src;
+		rte_crypto_op_free(p->op_buffer[i]);
 	}
 
 	//RTE_PORT_CRYPTO_READER_STATS_PKTS_IN_ADD(p, nb_rx);
@@ -230,12 +230,12 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	struct rte_port_crypto_writer *port;
 
 	/* Check input parameters */
-	if ((conf == NULL) ||
+/*	if ((conf == NULL) ||
 		(conf->ops == NULL)) {
 		RTE_LOG(ERR, PORT, "%s: Invalid input parameters\n", __func__);
 		return NULL;
 	}
-
+*/
 	/* Memory allocation */
 	port = rte_zmalloc_socket("PORT", sizeof(*port),
 			RTE_CACHE_LINE_SIZE, socket_id);
@@ -254,8 +254,8 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->do_cipher = conf->do_cipher;
 	port->do_hash = conf->do_hash;
 	port->hash_verify = conf->hash_verify;
-	port->cipher_alg = conf->cipher_alg;
-	port->auth_alg = conf->auth_alg;
+	port->cipher_algo = conf->cipher_algo;
+	port->auth_algo = conf->auth_algo;
 	port->op_burst_sz = conf->op_burst_sz;
 	port->nb_ops = 0;
 
