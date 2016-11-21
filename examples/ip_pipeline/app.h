@@ -170,12 +170,13 @@ struct app_ecry_params {
 	int iv_random_size;
 
 	struct rte_crypto_sym_xform auth_xform;
-	uint8_t akay_param;
+	uint8_t akey_param;
 	int akey_random_size;
 	struct crypto_key aad;
 	unsigned aad_param;
 	int aad_random_size;
 
+	int digest_size;
 	uint16_t block_size;
 	char string_type[MAX_STR_LEN];
 };
@@ -1468,7 +1469,7 @@ app_get_link_for_txq(struct app_params *app, struct app_pktq_hwq_out_params *p)
 
 /* simulate app_get_link_for_txq for crypto dev*/
 static inline struct app_ecry_params *
-app_get_ecry_for_eci(struct app_params *app, struct app_pktq_eci_params *p)
+app_get_cdev_for_eci(struct app_params *app, struct app_pktq_eci_params *p)
 {
 	char ecry_name[APP_PARAM_NAME_SIZE];
 	ssize_t ecry_param_idx;
@@ -1485,7 +1486,7 @@ app_get_ecry_for_eci(struct app_params *app, struct app_pktq_eci_params *p)
 }
 
 static inline struct app_ecry_params *
-app_get_ecry_for_eco(struct app_params *app, struct app_pktq_eco_params *p)
+app_get_cdev_for_eco(struct app_params *app, struct app_pktq_eco_params *p)
 {
 	char ecry_name[APP_PARAM_NAME_SIZE];
 	ssize_t ecry_param_idx;

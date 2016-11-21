@@ -1467,7 +1467,7 @@ app_init_ecry(struct app_params *app)
 			return -1;
 		}
 
-		l2fwd_enabled_crypto_mask |= (1 << cdev_id);
+//		l2fwd_enabled_crypto_mask |= (1 << cdev_id);
 
 		app->enabled_cdevs[cdev_id] = 1;
 		app->enabled_cdev_count++;
