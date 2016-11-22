@@ -50,7 +50,7 @@
 #include <rte_eal.h>
 #include <rte_malloc.h>
 
-//#include <rte_cryptodev.h>
+#include <rte_cryptodev.h>
 
 #include "app.h"
 #include "pipeline.h"
