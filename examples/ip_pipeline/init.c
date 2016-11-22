@@ -1197,6 +1197,8 @@ app_init_ecry(struct app_params *app)
 
 	fill_supported_algorithm_tables();
 
+	printf("########cdev_count= %d\n", cdev_count);
+
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
 		printf("app_init_ecry: Initializing %d\n", i);
