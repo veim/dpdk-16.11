@@ -1216,8 +1216,8 @@ app_init_ecry(struct app_params *app)
 		};
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
-		printf("######## app_init_ecry: dev_info->driver_name=%s\n", 
-				dev_info->driver_name);
+		printf("######## app_init_ecry: dev_info->driver_name=%s\n",
+				dev_info.driver_name);
 
 		struct app_ecry_params *p_ecry = &app->ecry_params[cdev_id];
 
