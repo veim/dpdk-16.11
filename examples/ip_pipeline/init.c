@@ -67,6 +67,8 @@
 
 #define APP_RETA_SIZE_MAX     (ETH_RSS_RETA_SIZE_512 / RTE_RETA_GROUP_SIZE)
 
+#define MAX_KEY_SIZE 128
+
 static void
 app_init_core_map(struct app_params *app)
 {
@@ -1251,7 +1253,7 @@ app_init_ecry(struct app_params *app)
 
 		struct app_ecry_params *p_ecry = &app->ecry_params[cdev_id];
 
-		serve_key_memory(p_ecry);
+		reserve_key_memory(p_ecry);
 
 		/* Set cipher parameters */
 		if (p_ecry->chain_type == CIPHER_HASH ||
