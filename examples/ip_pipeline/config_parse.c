@@ -188,7 +188,7 @@ static const struct app_ecry_params ecry_params_default = {
 			}
 			.algo = RTE_CRYPTO_CIPHER_AES_CBC,
 			.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
-		}
+		},
 	},
 
 	.ckey_param = 0,
@@ -204,12 +204,12 @@ static const struct app_ecry_params ecry_params_default = {
 			.key = {
 				.data = NULL,
 				.length = 0,
-			}
+			},
 			.algo = RTE_CRYPTO_AUTH_SHA1_HMAC,
 			.op = RTE_CRYPTO_AUTH_OP_GENERATE,
 			.digest_length = 0,
 			.add_auth_data_length = 0,
-		}
+		},
 	},
 
 	.akey_param = 0,
