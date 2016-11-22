@@ -86,7 +86,7 @@ struct rte_port_crypto_reader_params {
    uint8_t dev_id;
    uint16_t qp_id;
 
-   uint16_t op_burst_sz;
+   uint16_t burst_sz;
 
    /** encrypto or decrypto flag */
 //   uint8_t ec_dc;
@@ -116,7 +116,7 @@ struct rte_port_crypto_writer_params {
    enum rte_crypto_auth_algorithm auth_algo;
    enum rte_crypto_op_type op_type;
 
-   uint32_t op_burst_sz;
+   uint32_t burst_sz;
 };
 
 /** crypto_writer port operations */

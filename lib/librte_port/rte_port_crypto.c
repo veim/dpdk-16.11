@@ -122,7 +122,7 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	/* Initialization */
 	port->dev_id = conf->dev_id;
 	port->qp_id = conf->qp_id;
-	port->op_burst_sz = conf->op_burst_sz;
+	port->op_burst_sz = conf->burst_sz;
 
 	return port;
 }
@@ -269,7 +269,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->hash_verify = conf->hash_verify;
 	port->cipher_algo = conf->cipher_algo;
 	port->auth_algo = conf->auth_algo;
-	port->op_burst_sz = conf->op_burst_sz;
+	port->op_burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
 
 	return port;
