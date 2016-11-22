@@ -51,6 +51,10 @@ VPATH += $(SRCDIR)/pipeline
 
 INC += $(wildcard *.h) $(wildcard pipeline/*.h)  $(ICP_ROOT)/quickassist/include
 
+
+# external library include paths
+LDLIBS += -lcrypto
+
 # all source are stored in SRCS-y
 SRCS-$(CONFIG_RTE_LIBRTE_PIPELINE) := main.c
 SRCS-$(CONFIG_RTE_LIBRTE_PIPELINE) += config_parse.c
