@@ -49,8 +49,7 @@
 #endif
 
 #include <rte_cryptodev.h>
-#include <rte_port_crypto.h>
-
+//#include <rte_port_crypto.h>
 
 #include "cpu_core_map.h"
 #include "pipeline.h"
