@@ -57,6 +57,9 @@ LIBABIVER := 3
 # all source are stored in SRCS-y
 #
 SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_ethdev.c
+
+SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_crypto.c
+
 SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_ring.c
 ifeq ($(CONFIG_RTE_LIBRTE_IP_FRAG),y)
 SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_frag.c
@@ -69,11 +72,13 @@ SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_kni.c
 endif
 SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_source_sink.c
 
-SRCS-$(CONFIG_RTE_LIBRTE_PORT) += rte_port_crypto.c
-
 # install includes
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port.h
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_ethdev.h
+
+#INC += $(wildcard include_qat/*.h)
+SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
+
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_ring.h
 ifeq ($(CONFIG_RTE_LIBRTE_IP_FRAG),y)
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_frag.h
@@ -85,10 +90,6 @@ ifeq ($(CONFIG_RTE_LIBRTE_KNI),y)
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_kni.h
 endif
 SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_source_sink.h
-
-
-#INC += $(wildcard include_qat/*.h)
-SYMLINK-$(CONFIG_RTE_LIBRTE_PORT)-include += rte_port_crypto.h
 
 
 # this lib depends upon:
