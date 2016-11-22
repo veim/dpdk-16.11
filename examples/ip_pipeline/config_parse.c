@@ -185,7 +185,7 @@ static const struct app_ecry_params ecry_params_default = {
 			.key = {
 				.data = NULL,
 				.length = 0,
-			}
+			},
 			.algo = RTE_CRYPTO_CIPHER_AES_CBC,
 			.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
 		},
