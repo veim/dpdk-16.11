@@ -2192,6 +2192,7 @@ app_init_pipelines(struct app_params *app)
 
 		app_pipeline_params_get(app, params, &pp);
 
+		printf("######## back-end init begin\n");
 		/* Back-end */
 		data->be = NULL;
 		if (ptype->be_ops->f_init) {
@@ -2202,6 +2203,7 @@ app_init_pipelines(struct app_params *app)
 					"init error\n", params->name);
 		}
 
+		printf("######## front-end init begin\n");
 		/* Front-end */
 		data->fe = NULL;
 		if (ptype->fe_ops->f_init) {
