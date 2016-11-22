@@ -1111,6 +1111,31 @@ fill_supported_algorithm_tables(void)
 	strcpy(supported_cipher_algo[RTE_CRYPTO_CIPHER_3DES_CBC], "3DES_CBC");
 }
 
+static void
+reserve_key_memory(struct app_ecry_params *p_ecry)
+{
+	p_ecry->cipher_xform.cipher.key.data = rte_malloc("crypto key",
+						MAX_KEY_SIZE, 0);
+	if (p_ecry->cipher_xform.cipher.key.data == NULL)
+		rte_exit(EXIT_FAILURE, "Failed to allocate memory for cipher key");
+
+
+	p_ecry->auth_xform.auth.key.data = rte_malloc("auth key",
+						MAX_KEY_SIZE, 0);
+	if (p_ecry->auth_xform.auth.key.data == NULL)
+		rte_exit(EXIT_FAILURE, "Failed to allocate memory for auth key");
+
+	p_ecry->iv.data = rte_malloc("iv", MAX_KEY_SIZE, 0);
+	if (p_ecry->iv.data == NULL)
+		rte_exit(EXIT_FAILURE, "Failed to allocate memory for IV");
+	p_ecry->iv.phys_addr = rte_malloc_virt2phy(p_ecry->iv.data);
+
+	p_ecry->aad.data = rte_malloc("aad", MAX_KEY_SIZE, 0);
+	if (p_ecry->aad.data == NULL)
+		rte_exit(EXIT_FAILURE, "Failed to allocate memory for AAD");
+	p_ecry->aad.phys_addr = rte_malloc_virt2phy(p_ecry->aad.data);
+}
+
 static inline int
 check_supported_size(uint16_t length, uint16_t min, uint16_t max,
 		uint16_t increment)
@@ -1225,6 +1250,8 @@ app_init_ecry(struct app_params *app)
 				dev_info.max_nb_queue_pairs);
 
 		struct app_ecry_params *p_ecry = &app->ecry_params[cdev_id];
+
+		serve_key_memory(p_ecry);
 
 		/* Set cipher parameters */
 		if (p_ecry->chain_type == CIPHER_HASH ||
