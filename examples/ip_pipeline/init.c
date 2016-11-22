@@ -1197,11 +1197,11 @@ app_init_ecry(struct app_params *app)
 
 	fill_supported_algorithm_tables();
 
-	printf("########cdev_count= %d\n", cdev_count);
+	printf("########cdev_count=%d， n_ecrys=%d\n", cdev_count, app->n_ecrys);
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
-		printf("app_init_ecry: Initializing %d\n", i);
+		printf("########app_init_ecry: Initializing %d\n", i);
 
 		struct rte_cryptodev_qp_conf qp_conf;
 		struct rte_cryptodev_info dev_info;
