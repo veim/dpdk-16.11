@@ -166,7 +166,7 @@ static const struct app_pktq_hwq_out_params default_hwq_out_params = {
 };
 
 
-static const struct app_ecry_params ecry_params_default{
+static const struct app_ecry_params ecry_params_default = {
 //	char *name;
 	.parsed = 0,
 	.cdev_id = 0, /* Generated based on port mask */
