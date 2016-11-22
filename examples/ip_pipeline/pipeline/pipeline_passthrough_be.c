@@ -765,11 +765,9 @@ pipeline_passthrough_init(struct pipeline_params *params,
 	if (pipeline_passthrough_parse_args(&p_pt->params, params))
 		return NULL;
 
-	PLOG(p, HIGH, "Here, before swap_convert\n");
 	if (pipeline_passthrough_swap_convert(p_pt))
 		return NULL;
 
-	PLOG(p, HIGH, "Here, before get_hash_function\n");
 	p_pt->f_hash = get_hash_function(p_pt);
 
 	/* Pipeline */
@@ -779,8 +777,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.socket_id = params->socket_id,
 			.offset_port_id = 0,
 		};
-
-		PLOG(p, HIGH, "Here, before pipeline_create\n");
 
 		p->p = rte_pipeline_create(&pipeline_params);
 		if (p->p == NULL) {
@@ -807,6 +803,8 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.arg_ah = p_pt,
 			.burst_size = params->port_in[i].burst_size,
 		};
+
+		PLOG(p, HIGH, "before rte_pipeline_port_in_create\n");
 
 		int status = rte_pipeline_port_in_create(p->p,
 			&port_params,
