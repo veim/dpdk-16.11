@@ -764,8 +764,12 @@ pipeline_passthrough_init(struct pipeline_params *params,
 	/* Parse arguments */
 	if (pipeline_passthrough_parse_args(&p_pt->params, params))
 		return NULL;
+
+	PLOG(p, HIGH, "Here, before swap_convert\n");
 	if (pipeline_passthrough_swap_convert(p_pt))
 		return NULL;
+
+	PLOG(p, HIGH, "Here, before get_hash_function\n");
 	p_pt->f_hash = get_hash_function(p_pt);
 
 	/* Pipeline */
@@ -775,6 +779,8 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.socket_id = params->socket_id,
 			.offset_port_id = 0,
 		};
+
+		PLOG(p, HIGH, "Here, before pipeline_create\n");
 
 		p->p = rte_pipeline_create(&pipeline_params);
 		if (p->p == NULL) {
@@ -786,6 +792,9 @@ pipeline_passthrough_init(struct pipeline_params *params,
 	p->n_ports_in = params->n_ports_in;
 	p->n_ports_out = params->n_ports_out;
 	p->n_tables = p->n_ports_in;
+
+	PLOG(p, HIGH, "pipeline_created, n_ports_i=%d, n_ports_o=%d, n_tables=%d\n",
+			p->n_ports_in, p->n_ports_out, p->n_tables);
 
 	/*Input ports*/
 	for (i = 0; i < p->n_ports_in; i++) {
