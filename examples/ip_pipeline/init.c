@@ -1216,8 +1216,10 @@ app_init_ecry(struct app_params *app)
 		};
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
-		printf("######## app_init_ecry: dev_info->driver_name=%s\n",
-				dev_info.driver_name);
+		printf("######## app_init_ecry: dev_info: driver_name=%s,
+				dev_type=%d,max_nb_queue_pairs=%d\n",
+				dev_info.driver_name, dev_info.dev_type,
+				dev_info.max_nb_queue_pairs);
 
 		struct app_ecry_params *p_ecry = &app->ecry_params[cdev_id];
 
@@ -1225,6 +1227,8 @@ app_init_ecry(struct app_params *app)
 		if (p_ecry->chain_type == CIPHER_HASH ||
 				p_ecry->chain_type == HASH_CIPHER ||
 				p_ecry->chain_type == CIPHER_ONLY) {
+
+			printf("######## app_init_ecry: set cipher params\n");
 
 			/* Check if device supports cipher algo */
 			i = 0;
@@ -1329,6 +1333,8 @@ app_init_ecry(struct app_params *app)
 		if (p_ecry->chain_type == CIPHER_HASH ||
 				p_ecry->chain_type == HASH_CIPHER ||
 				p_ecry->chain_type == HASH_ONLY) {
+
+			printf("######## app_init_ecry: set auth params\n");
 
 			/* Check if device supports auth algo */
 			i = 0;
@@ -2268,9 +2274,9 @@ int app_init(struct app_params *app)
 	app_init_mempool(app);
 	app_init_link(app);
 
-	printf("######## app_init_ecry begin\n");
+	printf("######## app_init_ecry: begin\n");
 	app_init_ecry(app);
-	printf("######## app_init_ecry end\n");
+	printf("######## app_init_ecry: end\n");
 
 	app_init_swq(app);
 	app_init_tm(app);
