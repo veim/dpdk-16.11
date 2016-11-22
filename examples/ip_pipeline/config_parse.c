@@ -214,8 +214,8 @@ static const struct app_ecry_params ecry_params_default = {
 
 	.akey_param = 0,
 	.akey_random_size = -1,
-	.add_param = 0,
-	.add_random_size = -1,
+	.aad_param = 0,
+	.aad_random_size = -1,
 	.aad.length = 0,
 	.digest_size = -1,
 //	.block_size = ,
