@@ -399,7 +399,7 @@ app_print_usage(char *prgname)
 })
 
 
-#define APP_PARAM_ADD_CRYPTO_FOR_ECI(app, eci_name)			\
+#define APP_PARAM_ADD_ECRY_FOR_ECI(app, eci_name)			\
 ({									\
 	char ecry_name[APP_PARAM_NAME_SIZE];				\
 	ssize_t ecry_param_pos;						\
@@ -412,7 +412,7 @@ app_print_usage(char *prgname)
 	ecry_param_pos;							\
 })
 
-#define APP_PARAM_ADD_CRYPTO_FOR_ECO(app, eco_name)			\
+#define APP_PARAM_ADD_ECRY_FOR_ECO(app, eco_name)			\
 ({									\
 	char ecry_name[APP_PARAM_NAME_SIZE];				\
 	ssize_t ecry_param_pos;						\
@@ -972,6 +972,7 @@ parse_pipeline_pktq_in(struct app_params *app,
 		} else if (validate_name(name, "ECI", 1) == 0) {
 			type = APP_PKTQ_IN_ECQ;
 			id = APP_PARAM_ADD(app->eci_params, name);
+			APP_PARAM_ADD_ECRY_FOR_ECI(app, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_IN_SWQ;
 			id = APP_PARAM_ADD(app->swq_params, name);
@@ -1027,6 +1028,7 @@ parse_pipeline_pktq_out(struct app_params *app,
 		} else if (validate_name(name, "ECO", 1) == 0) {
 			type = APP_PKTQ_OUT_ECQ;
 			id = APP_PARAM_ADD(app->eco_params, name);
+			APP_PARAM_ADD_ECRY_FOR_ECO(app, name);
 		} else if (validate_name(name, "SWQ", 1) == 0) {
 			type = APP_PKTQ_OUT_SWQ;
 			id = APP_PARAM_ADD(app->swq_params, name);
@@ -2644,6 +2646,7 @@ app_config_parse(struct app_params *app, const char *file_name)
 	APP_PARAM_COUNT(app->hwq_out_params, app->n_pktq_hwq_out);
 
 	APP_PARAM_COUNT(app->ecry_params, app->n_ecrys);
+	printf("########APP_PARAM_COUNT: n_ecrys=%d\n", app->n_ecrys);
 	APP_PARAM_COUNT(app->eci_params, app->n_pktq_eci);
 	APP_PARAM_COUNT(app->eco_params, app->n_pktq_eco);
 
