@@ -2643,6 +2643,7 @@ app_config_parse(struct app_params *app, const char *file_name)
 	APP_PARAM_COUNT(app->hwq_in_params, app->n_pktq_hwq_in);
 	APP_PARAM_COUNT(app->hwq_out_params, app->n_pktq_hwq_out);
 
+	APP_PARAM_COUNT(app->ecry_params, app->n_ecrys);
 	APP_PARAM_COUNT(app->eci_params, app->n_pktq_eci);
 	APP_PARAM_COUNT(app->eco_params, app->n_pktq_eco);
 
