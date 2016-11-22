@@ -36,8 +36,8 @@
 
  #include <stdint.h>
 
-#include <rte_crypto_sym.h>
-#include <rte_crypto.h>
+//#include <rte_crypto_sym.h>
+#include <rte_cryptodev.h>
 #include "rte_port.h"
 
 

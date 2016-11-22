@@ -61,8 +61,8 @@
 
 #include <rte_pci.h>
 #include <rte_ip.h>
-#include <rte_crypto.h>
-#include <rte_crypto_sym.h>
+//#include <rte_crypto.h>
+//#include <rte_crypto_sym.h>
 #include <rte_cryptodev.h>
 
 #include "rte_port_crypto.h"
