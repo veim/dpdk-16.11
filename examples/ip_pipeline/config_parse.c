@@ -165,10 +165,48 @@ static const struct app_pktq_hwq_out_params default_hwq_out_params = {
 	}
 };
 
+
+static const struct app_ecry_params ecry_params_default{
+//	char *name;
+	.parsed = 0,
+	.cdev_id = 0, /* Generated based on port mask */
+//	uint32_t state; /* DOWN = 0, UP = 1 */
+	.pci_bdf = {0},
+
+//	uint32_t mempool_id;
+	.dev_type = CDEV_TYPE_HW,
+//	unsigned sessionless:1;
+	.chain_type = CIPHER_HASH,
+
+	.cipher_xform.type = RTE_CRYPTO_SYM_XFORM_CIPHER,
+	.cipher_xform.next = NULL,
+	.cipher_xform.cipher.key.length = 0,
+	.cipher_xform.cipher.algo = RTE_CRYPTO_CIPHER_AES_CBC,
+	.cipher_xform.cipher.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
+	.ckey_param = 0,
+	.ckey_random_size = -1,
+	.iv_param = 0,
+	.iv_random_size = -1,
+	.iv.length = 0,
+
+	.auth_xform.type = RTE_CRYPTO_SYM_XFORM_AUTH,
+	.auth_xform.next = NULL,
+	.auth_xform.auth.key.length = 0,
+	.auth_xform.auth.algo = RTE_CRYPTO_AUTH_SHA1_HMAC,
+	.auth_xform.auth.op = RTE_CRYPTO_AUTH_OP_GENERATE,
+	.akey_param = 0,
+	.akey_random_size = -1,
+	.add_param = 0,
+	.add_random_size = -1,
+	.aad.length = 0,
+	.digest_size = -1,
+//	.block_size = ,
+//	char string_type[MAX_STR_LEN];
+};
+
 static const struct app_pktq_eci_params default_eci_params = {
 	.parsed = 0,
 //	.mempool_id = 0, /* Position in the app->mempool_params */
-
     /* */
     .cdev_id = 0,
     /* */
@@ -176,8 +214,7 @@ static const struct app_pktq_eci_params default_eci_params = {
     /** encrypto or decrypto flag */
 //    .ec_dc = 0,
 
-    /** Recommended burst size to NIC TX queue. The actual burst size can be
-    bigger or smaller than this value. */
+    /**  */
     .burst = 32,
 
 //    .cipher = CIPHER_DES_CBC,
@@ -187,8 +224,6 @@ static const struct app_pktq_eci_params default_eci_params = {
 static const struct app_pktq_eco_params default_eco_params = {
 	.parsed = 0,
 	.burst = 32,
-
-//	.socket_id = 0,
 	/* */
 	.cdev_id = 1,
 	/* */
@@ -3316,10 +3351,16 @@ app_config_init(struct app_params *app)
 			sizeof(default_hwq_out_params));
 
 
+	for (i = 0; i < RTE_DIM(app->ecry_params); i++)
+		memcpy(&app->ecry_params[i],
+			&ecry_params_default,
+			sizeof(struct app_ecry_params));
+
 	for (i = 0; i < RTE_DIM(app->eci_params); i++)
 		memcpy(&app->eci_params[i],
 			&default_eci_params,
 			sizeof(default_eci_params));
+
 	for (i = 0; i < RTE_DIM(app->eco_params); i++)
 		memcpy(&app->eco_params[i],
 			&default_eco_params,
