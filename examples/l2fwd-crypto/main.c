@@ -598,7 +598,7 @@ generate_random_key(uint8_t *key, unsigned length)
 	int fd;
 	int ret;
 
-	printf("######## generate_random_key: length=%d\n", length);
+	printf("######## generate_random_key: length=%d, key=%d\n", length, (uint32_t)key);
 
 	fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0)
