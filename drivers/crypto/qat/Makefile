@@ -43,8 +43,6 @@ CFLAGS += -O3
 # external library include paths
 CFLAGS += -I$(SRCDIR)/qat_adf
 
-LDLIBS += -lcrypto
-
 #CFLAGS += -I/usr/include/openssl
 
 # library source files

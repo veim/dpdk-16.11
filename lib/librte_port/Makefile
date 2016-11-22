@@ -46,13 +46,6 @@ EXPORT_MAP := rte_port_version.map
 
 LIBABIVER := 3
 
-
-#
-# added for rte_port_crypto
-#
-#ICP_ROOT = ICP_ROOT=/QAT/QAT1.6/
-#INC += $(ICP_ROOT)/quickassist/include
-
 #
 # all source are stored in SRCS-y
 #
@@ -104,11 +97,6 @@ DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_ip_frag
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_sched
 ifeq ($(CONFIG_RTE_LIBRTE_KNI),y)
 DEPDIRS-$(CONFIG_RTE_LIBRTE_PORT) += lib/librte_kni
-endif
-
-
-ifeq ($(ICP_ROOT),)
-$(error "Please define ICP_ROOT environment variable")
 endif
 
 
