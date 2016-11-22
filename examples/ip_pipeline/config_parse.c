@@ -181,9 +181,14 @@ static const struct app_ecry_params ecry_params_default = {
 	.cipher_xform = {
 		.type = RTE_CRYPTO_SYM_XFORM_CIPHER,
 		.next = NULL,
-		.cipher.key.length = 0,
-		.cipher.algo = RTE_CRYPTO_CIPHER_AES_CBC,
-		.cipher.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
+		.cipher = {
+			.key = {
+				.data = NULL,
+				.length = 0,
+			}
+			.algo = RTE_CRYPTO_CIPHER_AES_CBC,
+			.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
+		}
 	},
 
 	.ckey_param = 0,
@@ -195,11 +200,18 @@ static const struct app_ecry_params ecry_params_default = {
 	.auth_xform = {
 		.type = RTE_CRYPTO_SYM_XFORM_AUTH,
 		.next = NULL,
-		.auth.key.length = 0,
-		.auth.algo = RTE_CRYPTO_AUTH_SHA1_HMAC,
-		.auth.op = RTE_CRYPTO_AUTH_OP_GENERATE,
+		.auth = {
+			.key = {
+				.data = NULL,
+				.length = 0,
+			}
+			.algo = RTE_CRYPTO_AUTH_SHA1_HMAC,
+			.op = RTE_CRYPTO_AUTH_OP_GENERATE,
+			.digest_length = 0,
+			.add_auth_data_length = 0,
+		}
 	},
-	
+
 	.akey_param = 0,
 	.akey_random_size = -1,
 	.add_param = 0,
