@@ -33,9 +33,9 @@ ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
 endif
 
-ifeq ($(ICP_ROOT),)
-$(error "Please define ICP_ROOT environment variable")
-endif
+#ifeq ($(ICP_ROOT),)
+#$(error "Please define ICP_ROOT environment variable")
+#endif
 
 # Default target, can be overridden by command line or environment
 RTE_TARGET ?= x86_64-native-linuxapp-gcc
@@ -49,11 +49,11 @@ APP = ip_pipeline
 
 VPATH += $(SRCDIR)/pipeline
 
-INC += $(wildcard *.h) $(wildcard pipeline/*.h)  $(ICP_ROOT)/quickassist/include
+INC += $(wildcard *.h) $(wildcard pipeline/*.h)  #$(ICP_ROOT)/quickassist/include
 
 
 # external library include paths
-LDLIBS += -lcrypto
+LDLIBS-$(CONFIG_RTE_LIBRTE_PIPELINE) += -lcrypto
 
 # all source are stored in SRCS-y
 SRCS-$(CONFIG_RTE_LIBRTE_PIPELINE) := main.c
@@ -87,14 +87,14 @@ CFLAGS += $(WERROR_FLAGS) -Wno-error=unused-function -Wno-error=unused-variable
 
 
 # From CRF 1.2 driver, library was renamed to libicp_qa_al.a
-ifneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
-ICP_LIBRARY_PATH = $(ICP_ROOT)/build/icp_qa_al.a
-else
-ICP_LIBRARY_PATH = $(ICP_ROOT)/build/libicp_qa_al.a
-endif
+#ifneq ($(wildcard $(ICP_ROOT)/build/icp_qa_al.a),)
+#ICP_LIBRARY_PATH = $(ICP_ROOT)/build/icp_qa_al.a
+#else
+#ICP_LIBRARY_PATH = $(ICP_ROOT)/build/libicp_qa_al.a
+#endif
 
-LDLIBS += -L$(ICP_ROOT)/build
-LDLIBS += $(ICP_LIBRARY_PATH) \
+#LDLIBS += -L$(ICP_ROOT)/build
+#LDLIBS += $(ICP_LIBRARY_PATH) \
                 -lz \
                 -losal \
                 -ladf_proxy \
