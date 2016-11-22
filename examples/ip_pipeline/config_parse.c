@@ -178,22 +178,28 @@ static const struct app_ecry_params ecry_params_default = {
 //	unsigned sessionless:1;
 	.chain_type = CIPHER_HASH,
 
-	.cipher_xform.type = RTE_CRYPTO_SYM_XFORM_CIPHER,
-	.cipher_xform.next = NULL,
-	.cipher_xform.cipher.key.length = 0,
-	.cipher_xform.cipher.algo = RTE_CRYPTO_CIPHER_AES_CBC,
-	.cipher_xform.cipher.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
+	.cipher_xform = {
+		.type = RTE_CRYPTO_SYM_XFORM_CIPHER,
+		.next = NULL,
+		.cipher.key.length = 0,
+		.cipher.algo = RTE_CRYPTO_CIPHER_AES_CBC,
+		.cipher.op = RTE_CRYPTO_CIPHER_OP_ENCRYPT,
+	},
+
 	.ckey_param = 0,
 	.ckey_random_size = -1,
 	.iv_param = 0,
 	.iv_random_size = -1,
 	.iv.length = 0,
 
-	.auth_xform.type = RTE_CRYPTO_SYM_XFORM_AUTH,
-	.auth_xform.next = NULL,
-	.auth_xform.auth.key.length = 0,
-	.auth_xform.auth.algo = RTE_CRYPTO_AUTH_SHA1_HMAC,
-	.auth_xform.auth.op = RTE_CRYPTO_AUTH_OP_GENERATE,
+	.auth_xform = {
+		.type = RTE_CRYPTO_SYM_XFORM_AUTH,
+		.next = NULL,
+		.auth.key.length = 0,
+		.auth.algo = RTE_CRYPTO_AUTH_SHA1_HMAC,
+		.auth.op = RTE_CRYPTO_AUTH_OP_GENERATE,
+	},
+	
 	.akey_param = 0,
 	.akey_random_size = -1,
 	.add_param = 0,
