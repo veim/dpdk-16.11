@@ -408,7 +408,7 @@ app_print_usage(char *prgname)
 	sscanf((eci_name), "ECI%" SCNu32, &cdev_id);\
 	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);			\
 	ecry_param_pos = APP_PARAM_ADD((app)->ecry_params, ecry_name);	\
-	printf("add %s, the pos=%zd\n", ecry_name, ecry_param_pos);\
+	printf("######## add %s, the pos=%zd\n", ecry_name, ecry_param_pos);\
 	ecry_param_pos;							\
 })
 
@@ -421,7 +421,7 @@ app_print_usage(char *prgname)
 	sscanf((eco_name), "ECO%" SCNu32, &cdev_id);\
 	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);			\
 	ecry_param_pos = APP_PARAM_ADD((app)->ecry_params, ecry_name);	\
-	printf("add %s, the pos=%zd\n", ecry_name, ecry_param_pos);\
+	printf("######## add %s, the pos=%zd\n", ecry_name, ecry_param_pos);\
 	ecry_param_pos;							\
 })
 
@@ -2646,7 +2646,7 @@ app_config_parse(struct app_params *app, const char *file_name)
 	APP_PARAM_COUNT(app->hwq_out_params, app->n_pktq_hwq_out);
 
 	APP_PARAM_COUNT(app->ecry_params, app->n_ecrys);
-	printf("########APP_PARAM_COUNT: n_ecrys=%d\n", app->n_ecrys);
+	printf("######## APP_PARAM_COUNT: n_ecrys=%d\n", app->n_ecrys);
 	APP_PARAM_COUNT(app->eci_params, app->n_pktq_eci);
 	APP_PARAM_COUNT(app->eco_params, app->n_pktq_eco);
 

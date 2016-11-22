@@ -1197,11 +1197,11 @@ app_init_ecry(struct app_params *app)
 
 	fill_supported_algorithm_tables();
 
-	printf("########cdev_count=%d， n_ecrys=%d\n", cdev_count, app->n_ecrys);
+	printf("######## cdev_count=%d， n_ecrys=%d\n", cdev_count, app->n_ecrys);
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
-		printf("########app_init_ecry: Initializing %d\n", i);
+		printf("######## app_init_ecry: Initializing cdev_id=%d\n", i);
 
 		struct rte_cryptodev_qp_conf qp_conf;
 		struct rte_cryptodev_info dev_info;
@@ -1212,7 +1212,7 @@ app_init_ecry(struct app_params *app)
 			.session_mp = {
 				.nb_objs = 2048,
 				.cache_size = 64
-			}
+			},
 		};
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
@@ -2266,9 +2266,9 @@ int app_init(struct app_params *app)
 	app_init_mempool(app);
 	app_init_link(app);
 
-	printf("########app_init_ecry begin\n");
+	printf("######## app_init_ecry begin\n");
 	app_init_ecry(app);
-	printf("########app_init_ecry end\n");
+	printf("######## app_init_ecry end\n");
 
 	app_init_swq(app);
 	app_init_tm(app);
@@ -2286,9 +2286,9 @@ int app_init(struct app_params *app)
 	app_pipeline_type_register(app, &pipeline_firewall);
 	app_pipeline_type_register(app, &pipeline_routing);
 
-	printf("########app_init_pipelines begin\n");
+	printf("######## app_init_pipelines begin\n");
 	app_init_pipelines(app);
-	printf("########app_init_pipelines end\n");
+	printf("######## app_init_pipelines end\n");
 
 	app_init_threads(app);
 
