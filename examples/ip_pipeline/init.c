@@ -1216,8 +1216,7 @@ app_init_ecry(struct app_params *app)
 		};
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
-		printf("######## app_init_ecry: dev_info: driver_name=%s,
-				dev_type=%d,max_nb_queue_pairs=%d\n",
+		printf("######## app_init_ecry: dev_info: driver_name=%s, dev_type=%d, max_nb_queue_pairs=%d\n",
 				dev_info.driver_name, dev_info.dev_type,
 				dev_info.max_nb_queue_pairs);
 
