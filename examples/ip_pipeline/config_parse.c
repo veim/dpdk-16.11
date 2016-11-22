@@ -408,7 +408,7 @@ app_print_usage(char *prgname)
 	sscanf((eci_name), "ECI%" SCNu32, &cdev_id);\
 	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);			\
 	ecry_param_pos = APP_PARAM_ADD((app)->ecry_params, ecry_name);	\
-	printf("add %s, the pos=%d\n", ecry_name, ecry_param_pos)\
+	printf("add %s, the pos=%d\n", ecry_name, ecry_param_pos);\
 	ecry_param_pos;							\
 })
 
@@ -421,7 +421,7 @@ app_print_usage(char *prgname)
 	sscanf((eco_name), "ECO%" SCNu32, &cdev_id);\
 	sprintf(ecry_name, "ECRY%" PRIu32, cdev_id);			\
 	ecry_param_pos = APP_PARAM_ADD((app)->ecry_params, ecry_name);	\
-	printf("add %s, the pos=%d\n", ecry_name, ecry_param_pos)\
+	printf("add %s, the pos=%d\n", ecry_name, ecry_param_pos);\
 	ecry_param_pos;							\
 })
 
