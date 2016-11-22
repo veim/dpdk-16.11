@@ -1148,6 +1148,8 @@ generate_random_key(uint8_t *key, unsigned length)
 	ret = read(fd, key, length);
 	close(fd);
 
+	printf("######## generate_random_key: length=%d, ret=%d\n", length, ret);
+
 	if (ret != (signed)length)
 		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");
 }
@@ -1201,7 +1203,7 @@ app_init_ecry(struct app_params *app)
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
-		printf("######## Initializing cdev_id=%d\n", i);
+		printf("######## Initializing cdev_id=%d\n", cdev_id);
 
 		struct rte_cryptodev_qp_conf qp_conf;
 		struct rte_cryptodev_info dev_info;
@@ -1335,7 +1337,6 @@ app_init_ecry(struct app_params *app)
 				generate_random_key(
 					p_ecry->cipher_xform.cipher.key.data,
 					p_ecry->cipher_xform.cipher.key.length);
-
 		}
 
 		/* Set auth parameters */
