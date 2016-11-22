@@ -1201,7 +1201,7 @@ app_init_ecry(struct app_params *app)
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
-		printf("######## app_init_ecry: Initializing cdev_id=%d\n", i);
+		printf("######## Initializing cdev_id=%d\n", i);
 
 		struct rte_cryptodev_qp_conf qp_conf;
 		struct rte_cryptodev_info dev_info;
@@ -1216,7 +1216,7 @@ app_init_ecry(struct app_params *app)
 		};
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
-		printf("######## app_init_ecry: dev_info: driver_name=%s, dev_type=%d, max_nb_queue_pairs=%d\n",
+		printf("######## dev_info: driver_name=%s, dev_type=%d, max_nb_qps=%d\n",
 				dev_info.driver_name, dev_info.dev_type,
 				dev_info.max_nb_queue_pairs);
 
@@ -1227,7 +1227,7 @@ app_init_ecry(struct app_params *app)
 				p_ecry->chain_type == HASH_CIPHER ||
 				p_ecry->chain_type == CIPHER_ONLY) {
 
-			printf("######## app_init_ecry: set cipher params\n");
+			printf("######## set cipher params\n");
 
 			/* Check if device supports cipher algo */
 			i = 0;
@@ -1235,6 +1235,10 @@ app_init_ecry(struct app_params *app)
 			cap = &dev_info.capabilities[i];
 			while (cap->op != RTE_CRYPTO_OP_TYPE_UNDEFINED) {
 				cap_cipher_algo = cap->sym.cipher.algo;
+
+				printf("######## opt_c_algo=%d, cap_c_algo=%d\n",
+						opt_cipher_algo, cap_cipher_algo);
+
 				if (cap->sym.xform_type ==
 						RTE_CRYPTO_SYM_XFORM_CIPHER) {
 					if (cap_cipher_algo == opt_cipher_algo) {
@@ -1260,6 +1264,9 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided IV is supported
 			 * by the algorithm chosen.
 			 */
+			 printf("######## iv_param=%d, iv_random_size=%d\n",
+					 p_ecry->iv_param, p_ecry->iv_random_size);
+
 			if (p_ecry->iv_param) {
 				if (check_supported_size(p_ecry->iv.length,
 						cap->sym.cipher.iv_size.min,
@@ -1291,6 +1298,9 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided cipher key is supported
 			 * by the algorithm chosen.
 			 */
+			 printf("######## ckey_param=%d, ckey_random_size=%d\n",
+					 p_ecry->ckey_param, p_ecry->ckey_random_size);
+
 			if (p_ecry->ckey_param) {
 				if (check_supported_size(
 						p_ecry->cipher_xform.cipher.key.length,
@@ -1333,7 +1343,7 @@ app_init_ecry(struct app_params *app)
 				p_ecry->chain_type == HASH_CIPHER ||
 				p_ecry->chain_type == HASH_ONLY) {
 
-			printf("######## app_init_ecry: set auth params\n");
+			printf("######## set auth params\n");
 
 			/* Check if device supports auth algo */
 			i = 0;
@@ -1341,6 +1351,10 @@ app_init_ecry(struct app_params *app)
 			cap = &dev_info.capabilities[i];
 			while (cap->op != RTE_CRYPTO_OP_TYPE_UNDEFINED) {
 				cap_auth_algo = cap->sym.auth.algo;
+
+				printf("######## opt_a_algo=%d, cap_a_algo=%d\n",
+						opt_auth_algo, cap_auth_algo);
+
 				if ((cap->sym.xform_type == RTE_CRYPTO_SYM_XFORM_AUTH) &&
 						(cap_auth_algo == opt_auth_algo) &&
 						(check_type(p_ecry, &dev_info) == 0)) {
@@ -1364,6 +1378,9 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided AAD is supported
 			 * by the algorithm chosen.
 			 */
+			printf("######## aad_param=%d, aad_random_size=%d\n",
+					 p_ecry->aad_param, p_ecry->aad_random_size);
+
 			if (p_ecry->aad_param) {
 				if (check_supported_size(p_ecry->aad.length,
 						cap->sym.auth.aad_size.min,
@@ -1398,6 +1415,9 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided auth key is supported
 			 * by the algorithm chosen.
 			 */
+			printf("######## akey_param=%d, akey_random_size=%d\n",
+					 p_ecry->akey_param, p_ecry->akey_random_size);
+
 			if (p_ecry->akey_param) {
 				if (check_supported_size(
 						p_ecry->auth_xform.auth.key.length,
