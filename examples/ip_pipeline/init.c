@@ -2032,6 +2032,8 @@ void app_pipeline_params_get(struct app_params *app,
 			params->auth_xform = p_ecry->auth_xform;
 			params->aad = p_ecry->aad;
 
+			/* must be sym, else, rte_crypto_op_alloc will not init op->sym */
+			params->op_type = RTE_CRYPTO_OP_TYPE_SYMMETRIC;
 			//out->burst_size = p_eci->burst;
 			break;
 		}
