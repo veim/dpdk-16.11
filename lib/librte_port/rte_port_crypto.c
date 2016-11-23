@@ -392,6 +392,10 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 				rte_pktmbuf_pkt_len(pkt) - p->digest_length);
 		op->sym->auth.digest.length = p->digest_length;
 
+		printf("######## crypto_tx: auth: digest.phys_addr=%d, digest_length=%d\n",
+				op->sym->auth.digest.phys_addr,
+				op->sym->auth.digest.digest_length);
+
 		/* For wireless algorithms, offset/length must be in bits */
 //		if (p->auth_algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 || maybe wrong, by veim
 		if (p->auth_xform.auth.algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 ||
@@ -403,18 +407,29 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 			op->sym->auth.data.offset = ipdata_offset;
 			op->sym->auth.data.length = data_len;
 		}
+		printf("######## crypto_tx: auth: data.offset=%d, data.length=%d\n",
+				op->sym->auth.data.offset,
+				op->sym->auth.data.length);
 
 		if (p->aad.length) {
 			op->sym->auth.aad.data = p->aad.data;
 			op->sym->auth.aad.phys_addr = p->aad.phys_addr;
 			op->sym->auth.aad.length = p->aad.length;
 		}
+
+		printf("######## crypto_tx: auth: aad.phys_addr=%d, aad.length=%d\n",
+				op->sym->auth.aad.phys_addr,
+				op->sym->auth.aad.length);
 	}
 
 	if (p->do_cipher) {
 		op->sym->cipher.iv.data = p->iv.data;
 		op->sym->cipher.iv.phys_addr = p->iv.phys_addr;
 		op->sym->cipher.iv.length = p->iv.length;
+
+		printf("######## crypto_tx: cipher: iv.phys_addr=%d, iv.length=%d\n",
+				op->sym->cipher.iv.phys_addr,
+				op->sym->cipher.iv.length);
 
 		/* For wireless algorithms, offset/length must be in bits */
 		if (p->cipher_xform.cipher.algo == RTE_CRYPTO_CIPHER_SNOW3G_UEA2 ||
@@ -426,6 +441,10 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 			op->sym->cipher.data.offset = ipdata_offset;
 			op->sym->cipher.data.length = data_len;
 		}
+
+		printf("######## crypto_tx: cipher: data.offset=%d, data.length=%d\n",
+				op->sym->cipher.data.offset,
+				op->sym->cipher.data.length);
 	}
 
 	op->sym->m_src = pkt;
