@@ -263,6 +263,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->digest_length = conf->digest_length;
 	port->dev_id = conf->dev_id;
 	port->qp_id = conf->qp_id;
+	port->block_size = conf->block_size;
 /*	port->op_pool = conf->op_pool;*/
 	port->session = conf->session;
 	port->op_type = conf->op_type;

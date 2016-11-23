@@ -218,7 +218,7 @@ static const struct app_ecry_params ecry_params_default = {
 	.aad_random_size = -1,
 	.aad.length = 0,
 	.digest_size = -1,
-//	.block_size = ,
+	.block_size = 0,
 //	char string_type[MAX_STR_LEN];
 };
 

@@ -103,7 +103,7 @@ struct rte_port_crypto_writer_params {
    uint8_t dev_id;
    /**   */
    uint16_t qp_id;
-
+   uint16_t block_size;
    unsigned digest_length;
 
    struct rte_mempool *op_pool;

@@ -2004,13 +2004,13 @@ void app_pipeline_params_get(struct app_params *app,
 
 		case APP_PKTQ_OUT_ECQ:
 		{
-			struct app_pktq_eci_params *p_eci =
-				&app->eci_params[in->id];
+			struct app_pktq_eco_params *p_eco =
+				&app->eco_params[in->id];
 			struct app_ecry_params *p_ecry =
-				app_get_cdev_for_eci(app, p_eci);
+				app_get_cdev_for_eco(app, p_eco);
 
 			uint32_t cdev_id, qp_id;
-			sscanf(p_eci->name, "ECO%" SCNu32 ".%" SCNu32, &cdev_id, &qp_id);
+			sscanf(p_eco->name, "ECO%" SCNu32 ".%" SCNu32, &cdev_id, &qp_id);
 			struct rte_port_crypto_writer_params *params =
 				&out->params.crypto;
 
@@ -2018,7 +2018,8 @@ void app_pipeline_params_get(struct app_params *app,
 //			params->dev_id = p_ecry->cdev_id;
 			params->dev_id = cdev_id;
 			params->qp_id = qp_id;
-			params->burst_sz = p_eci->burst;
+			params->burst_sz = p_eco->burst;
+			params->block_size = p_ecry->block_size;
 			//out->burst_size = p_eci->burst;
 			break;
 		}
