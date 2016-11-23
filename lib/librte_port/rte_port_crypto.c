@@ -68,7 +68,7 @@
 #include "rte_port_crypto.h"
 
 #define MAX_PKT_BURST 32
-
+#define NB_MBUF   8192
 
 /*
  * Port CRYPTO Reader
@@ -252,11 +252,18 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 		return NULL;
 	}
 
+	port->op_pool = rte_crypto_op_pool_create("crypto_op_pool",
+			RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0, socket_id);
+	if (port->op_pool == NULL) {
+		RTE_LOG(ERR, PORT, "%s: Failed to allocate port op_pool\n", __func__);
+		return NULL;
+	}
+
 	/* Initialization */
 	port->digest_length = conf->digest_length;
 	port->dev_id = conf->dev_id;
 	port->qp_id = conf->qp_id;
-	port->op_pool = conf->op_pool;
+/*	port->op_pool = conf->op_pool;*/
 	port->session = conf->session;
 	port->op_type = conf->op_type;
 	port->do_cipher = conf->do_cipher;
