@@ -93,7 +93,7 @@ struct rte_port_crypto_reader {
 	uint8_t dev_id;
 	uint16_t qp_id;
 
-	uint16_t op_burst_sz;
+	uint16_t burst_sz;
 
 	struct rte_crypto_op *op_buffer[MAX_PKT_BURST];
 };
@@ -104,6 +104,8 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	struct rte_port_crypto_reader_params *conf =
 			(struct rte_port_crypto_reader_params *) params;
 	struct rte_port_crypto_reader *port;
+
+	printf("rte_port_crypto_reader_create begin\n");
 
 	/* Check input parameters */
 	if (conf == NULL) {
@@ -122,7 +124,7 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	/* Initialization */
 	port->dev_id = conf->dev_id;
 	port->qp_id = conf->qp_id;
-	port->op_burst_sz = conf->burst_sz;
+	port->burst_sz = conf->burst_sz;
 
 	return port;
 }
@@ -135,7 +137,7 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 
 	uint16_t nb_rx = 0;
 	uint16_t i;
-	uint32_t n_pkts_need = (n_pkts < p->op_burst_sz) ? n_pkts : p->op_burst_sz;
+	uint32_t n_pkts_need = (n_pkts < p->burst_sz) ? n_pkts : p->burst_sz;
 
 	nb_rx = rte_cryptodev_dequeue_burst(p->dev_id, p->qp_id,
 			p->op_buffer, n_pkts_need);
@@ -212,7 +214,7 @@ struct rte_port_crypto_writer {
 
 	uint16_t block_size;
 	unsigned digest_length;
-	uint32_t op_burst_sz;
+	uint32_t burst_sz;
 //	uint64_t bsz_mask
 
 	struct rte_mempool *op_pool;
@@ -269,7 +271,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->hash_verify = conf->hash_verify;
 	port->cipher_algo = conf->cipher_algo;
 	port->auth_algo = conf->auth_algo;
-	port->op_burst_sz = conf->burst_sz;
+	port->burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
 
 	return port;
@@ -300,7 +302,7 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	struct rte_port_crypto_writer *p =
 		(struct rte_port_crypto_writer *) port;
 
-	if(p->nb_ops >= p->op_burst_sz)
+	if(p->nb_ops >= p->burst_sz)
 		return 0;
 
 	p->op_buffer[p->nb_ops++] = rte_crypto_op_alloc(
@@ -403,7 +405,7 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 //	qconf->op_buf[p->dev_id].buffer[len] = op;
 //	len++;
 
-	if (p->nb_ops >= p->op_burst_sz)
+	if (p->nb_ops >= p->burst_sz)
 		enqueue_burst(p);
 
 	return 0;
@@ -451,7 +453,7 @@ rte_port_crypto_writer_tx_bulk(void *port,
 		}
 
 		p->crypto_buf_count = crypto_buf_count;
-		if (crypto_buf_count >= p->op_burst_sz)
+		if (crypto_buf_count >= p->burst_sz)
 			process_burst(p);
 	}
 
