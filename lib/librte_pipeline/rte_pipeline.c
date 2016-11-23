@@ -862,6 +862,9 @@ rte_pipeline_port_in_create(struct rte_pipeline *p,
 		return -EINVAL;
 	}
 
+	printf("rte_port_crypto_reader_create finished, port is %s\n",
+			(port == NULL) ? "NULL" : "val");
+
 	/* Commit current table to the pipeline */
 	p->num_ports_in++;
 	*port_id = id;
