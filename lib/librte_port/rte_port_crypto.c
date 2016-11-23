@@ -291,10 +291,10 @@ enqueue_burst(struct rte_port_crypto_writer *p)
 {
 	uint32_t nb_tx;
 
-	printf("######## crypto_enqueue_burst begin: p->nb_ops=%d\n", p->nb_ops);
-
 	nb_tx = rte_cryptodev_enqueue_burst(p->dev_id, p->qp_id,
 			 p->op_buffer, p->nb_ops);
+
+	printf("######## crypto_enqueue_burst: nb_tx=%d\n", nb_tx);
 
 //	RTE_PORT_ETHDEV_WRITER_STATS_PKTS_DROP_ADD(p, p->nb_ops - nb_tx);
 	if (unlikely(nb_tx < p->nb_ops)) {
@@ -313,9 +313,6 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	struct rte_port_crypto_writer *p =
 		(struct rte_port_crypto_writer *) port;
 
-	printf("######## crypto_tx begin: p->nb_ops=%d, p->burst_sz=%d\n",
- 			p->nb_ops, p->burst_sz);
-
 	if(p->nb_ops >= p->burst_sz)
 		return 0;
 
@@ -330,9 +327,6 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 
 	eth_hdr = rte_pktmbuf_mtod(pkt, struct ether_hdr *);
 
-	printf("######## crypto_tx here: eth_hdr is %s\n",
-			(eth_hdr == NULL) ? "NULL" : "val");
-
 	if (eth_hdr->ether_type != rte_cpu_to_be_16(ETHER_TYPE_IPv4))
 		return -1;
 
@@ -341,26 +335,17 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	ip_hdr = (struct ipv4_hdr *)(rte_pktmbuf_mtod(pkt, char *) +
 			ipdata_offset);
 
-	printf("######## crypto_tx here: ip_hdr is %s\n",
-			(ip_hdr == NULL) ? "NULL" : "val");
-
-
 	ipdata_offset += (ip_hdr->version_ihl & IPV4_HDR_IHL_MASK)
 			* IPV4_IHL_MULTIPLIER;
 
 	/* Zero pad data to be crypto'd so it is block aligned */
 	data_len  = rte_pktmbuf_data_len(pkt) - ipdata_offset;
 
-	printf("######## crypto_tx here: data_len=%d, block_size=%d\n",
-			data_len, p->block_size);
-
 	if (p->do_hash && p->hash_verify)
 		data_len -= p->digest_length;
 
 	pad_len = data_len % p->block_size ? p->block_size -
 			(data_len % p->block_size) : 0;
-
-	printf("######## crypto_tx here: pad_len=%d\n", pad_len);
 
 	if (pad_len) {
 		padding = rte_pktmbuf_append(pkt, pad_len);
@@ -375,13 +360,6 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	struct rte_crypto_op *op = p->op_buffer[p->nb_ops];
 	rte_crypto_op_attach_sym_session(op, p->session);
 
-	printf("######## crypto_tx: do_hash=%d, do_cipher=%d, hash_verify=%d\n",
-			p->do_hash, p->do_cipher, p->hash_verify);
-	printf("######## crypto_tx: data_len=%d, p->digest_length=%u\n",
-					data_len, p->digest_length);
-	printf("######## crypto_tx: op= %"PRIu64", op->sym is %s\n",
-	 		(unsigned long)op, (op->sym == NULL)?"NULL":"val");
-
 	if (p->do_hash) {
 		if (!p->hash_verify) {
 			/* Append space for digest to end of packet */
@@ -392,15 +370,9 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 					uint8_t *) + ipdata_offset + data_len;
 		}
 
-		printf("######## crypto_tx: auth: digest.data set\n");
-
 		op->sym->auth.digest.phys_addr = rte_pktmbuf_mtophys_offset(pkt,
 				rte_pktmbuf_pkt_len(pkt) - p->digest_length);
 		op->sym->auth.digest.length = p->digest_length;
-
-		printf("######## crypto_tx: auth: digest.phys_addr= %"PRId64", digest.length=%d\n",
-				op->sym->auth.digest.phys_addr,
-				op->sym->auth.digest.length);
 
 		/* For wireless algorithms, offset/length must be in bits */
 //		if (p->auth_algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 || maybe wrong, by veim
@@ -413,29 +385,18 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 			op->sym->auth.data.offset = ipdata_offset;
 			op->sym->auth.data.length = data_len;
 		}
-		printf("######## crypto_tx: auth: data.offset=%d, data.length=%d\n",
-				op->sym->auth.data.offset,
-				op->sym->auth.data.length);
 
 		if (p->aad.length) {
 			op->sym->auth.aad.data = p->aad.data;
 			op->sym->auth.aad.phys_addr = p->aad.phys_addr;
 			op->sym->auth.aad.length = p->aad.length;
 		}
-
-		printf("######## crypto_tx: auth: aad.phys_addr= %"PRIu64", aad.length=%d\n",
-				op->sym->auth.aad.phys_addr,
-				op->sym->auth.aad.length);
 	}
 
 	if (p->do_cipher) {
 		op->sym->cipher.iv.data = p->iv.data;
 		op->sym->cipher.iv.phys_addr = p->iv.phys_addr;
 		op->sym->cipher.iv.length = p->iv.length;
-
-		printf("######## crypto_tx: cipher: iv.phys_addr= %"PRIu64", iv.length=%d\n",
-				op->sym->cipher.iv.phys_addr,
-				op->sym->cipher.iv.length);
 
 		/* For wireless algorithms, offset/length must be in bits */
 		if (p->cipher_xform.cipher.algo == RTE_CRYPTO_CIPHER_SNOW3G_UEA2 ||
@@ -447,10 +408,6 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 			op->sym->cipher.data.offset = ipdata_offset;
 			op->sym->cipher.data.length = data_len;
 		}
-
-		printf("######## crypto_tx: cipher: data.offset=%d, data.length=%d\n",
-				op->sym->cipher.data.offset,
-				op->sym->cipher.data.length);
 	}
 
 	op->sym->m_src = pkt;
@@ -458,8 +415,6 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	p->nb_ops ++;
 	if (p->nb_ops >= p->burst_sz)
 		enqueue_burst(p);
-
-	printf("######## crypto_tx end\n");
 
 	return 0;
 }
