@@ -377,7 +377,8 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 
 	printf("######## crypto_tx: do_hash=%d, do_cipher=%d, hash_verify=%d\n",
 			p->do_hash, p->do_cipher, p->hash_verify);
-
+	printf("######## crypto_tx: data_len=%d, p->digest_length=%d\n",
+					data_len, p->digest_length);
 	if (p->do_hash) {
 		if (!p->hash_verify) {
 			/* Append space for digest to end of packet */
