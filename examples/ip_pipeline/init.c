@@ -1856,7 +1856,7 @@ void app_pipeline_params_get(struct app_params *app,
 //			out->params.crypto.dev_id = p_ecry->pmd_id;
 			out->params.crypto.dev_id = cdev_id;
 			out->params.crypto.qp_id = qp_id;
-			out->params.crypto.op_burst_sz = p_eci->burst;
+			out->params.crypto.burst_sz = p_eci->burst;
 			out->burst_size = p_eci->burst;
 			break;
 		}
@@ -2018,7 +2018,7 @@ void app_pipeline_params_get(struct app_params *app,
 //			params->dev_id = p_ecry->cdev_id;
 			params->dev_id = cdev_id;
 			params->qp_id = qp_id;
-			params->op_burst_sz = p_eci->burst;
+			params->burst_sz = p_eci->burst;
 			//out->burst_size = p_eci->burst;
 			break;
 		}
