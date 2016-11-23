@@ -395,29 +395,26 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 
 	op->sym->m_src = pkt;
 
-//	qconf = &lcore_queue_conf[lcore_id];
-//	len = qconf->op_buf[p->dev_id].len;
-//	qconf->op_buf[p->dev_id].buffer[len] = op;
-//	len++;
-
 	if (p->nb_ops >= p->burst_sz)
 		enqueue_burst(p);
 
 	return 0;
 }
 
-/*
+
 static int
 rte_port_crypto_writer_tx_bulk(void *port,
 		struct rte_mbuf **pkts,
 		uint64_t pkts_mask)
 {
-	struct rte_port_crypto_writer *p =
-		(struct rte_port_crypto_writer *) port;
+//	struct rte_port_crypto_writer *p =
+//		(struct rte_port_crypto_writer *) port;
 
-	uint64_t bsz_mask = p->bsz_mask;
-	uint32_t nb_ops = p->nb_ops;
-	uint64_t expr = (pkts_mask & (pkts_mask + 1)) |
+//	uint64_t bsz_mask = p->bsz_mask;
+//	uint32_t nb_ops = p->nb_ops;
+	int ret = 0;
+	int cnt = 0;
+/*	uint64_t expr = (pkts_mask & (pkts_mask + 1)) |
 			((pkts_mask & bsz_mask) ^ bsz_mask);
 
 	if (expr == 0) {
@@ -437,24 +434,29 @@ rte_port_crypto_writer_tx_bulk(void *port,
 			rte_pktmbuf_free(pkt);
 		}
 	} else {
-		for ( ; pkts_mask; ) {
+*/		for ( ; pkts_mask; ) {
 			uint32_t pkt_index = __builtin_ctzll(pkts_mask);
 			uint64_t pkt_mask = 1LLU << pkt_index;
 			struct rte_mbuf *pkt = pkts[pkt_index];
 
-			p->crypto_buf[crypto_buf_count++] = pkt;
-			RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(p, 1);
+			ret = rte_port_crypto_writer_tx(port, pkt);
+
+			if(ret == 0)
+				cnt++;
+
+//			p->crypto_buf[crypto_buf_count++] = pkt;
+//			RTE_PORT_CRYPTO_WRITER_STATS_PKTS_IN_ADD(p, 1);
 			pkts_mask &= ~pkt_mask;
 		}
 
-		p->crypto_buf_count = crypto_buf_count;
-		if (crypto_buf_count >= p->burst_sz)
-			process_burst(p);
+//		p->crypto_buf_count = crypto_buf_count;
+//		if (crypto_buf_count >= p->burst_sz)
+//			process_burst(p);
 	}
 
-	return 0;
+	return cnt;
 }
-*/
+
 
 static int
 rte_port_crypto_writer_flush(void *port)
@@ -513,7 +515,7 @@ struct rte_port_out_ops rte_port_crypto_writer_ops = {
 	.f_create = rte_port_crypto_writer_create,
 	.f_free = rte_port_crypto_writer_free,
 	.f_tx = rte_port_crypto_writer_tx,
-	.f_tx_bulk = NULL,//rte_port_crypto_writer_tx_bulk,
+	.f_tx_bulk = rte_port_crypto_writer_tx_bulk, /* cannot be NULL */
 	.f_flush = rte_port_crypto_writer_flush,
 	.f_stats = rte_port_crypto_writer_stats_read,
 };
