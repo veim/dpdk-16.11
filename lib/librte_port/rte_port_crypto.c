@@ -253,7 +253,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	}
 
 	port->op_pool = rte_crypto_op_pool_create("crypto_op_pool",
-			RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0, socket_id);
+			conf->op_type, NB_MBUF, 128, 0, socket_id);
 	if (port->op_pool == NULL) {
 		RTE_LOG(ERR, PORT, "%s: Failed to allocate port op_pool\n", __func__);
 		return NULL;
