@@ -452,7 +452,7 @@ rte_port_crypto_writer_tx_bulk(void *port,
 //		p->crypto_buf_count = crypto_buf_count;
 //		if (crypto_buf_count >= p->burst_sz)
 //			process_burst(p);
-	}
+//	}
 
 	return cnt;
 }
