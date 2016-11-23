@@ -804,7 +804,7 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.burst_size = params->port_in[i].burst_size,
 		};
 
-		PLOG(p, HIGH, "before rte_pipeline_port_in_create\n");
+		PLOG(p, HIGH, "before rte_pipeline_port_in_create, i=%d\n", i);
 
 		int status = rte_pipeline_port_in_create(p->p,
 			&port_params,

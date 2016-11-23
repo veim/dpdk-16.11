@@ -93,7 +93,6 @@ pipeline_port_in_params_convert(struct pipeline_port_in_params  *p)
 		return (void *) &p->params.ethdev;
 
 	case PIPELINE_PORT_IN_CRYPTO_READER:
-		printf("pipeline_port_in_params_convert: get crypto\n");
 		return (void *) &p->params.crypto;
 
 	case PIPELINE_PORT_IN_RING_READER:
@@ -127,7 +126,6 @@ pipeline_port_in_params_get_ops(struct pipeline_port_in_params  *p)
 		return &rte_port_ethdev_reader_ops;
 
 	case PIPELINE_PORT_IN_CRYPTO_READER:
-		printf("pipeline_port_in_params_get_ops: get crypto_reader_ops\n");
 		return &rte_port_crypto_reader_ops;
 
 	case PIPELINE_PORT_IN_RING_READER:
