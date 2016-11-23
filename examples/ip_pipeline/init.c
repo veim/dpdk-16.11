@@ -2020,6 +2020,8 @@ void app_pipeline_params_get(struct app_params *app,
 			params->qp_id = qp_id;
 			params->burst_sz = p_eco->burst;
 			params->block_size = p_ecry->block_size;
+			params->digest_length = p_ecry->digest_length;
+
 			params->do_cipher = p_ecry->do_cipher;
 			params->do_hash = p_ecry->do_hash;
 			params->hash_verify = p_ecry->hash_verify;
