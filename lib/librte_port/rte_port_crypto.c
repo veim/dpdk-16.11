@@ -140,6 +140,8 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 	nb_rx = rte_cryptodev_dequeue_burst(p->dev_id, p->qp_id,
 			p->op_buffer, n_pkts_need);
 
+	printf("######## crypto_rx: nb_rx=%d\n", nb_rx);
+
 	for (i = 0; i < nb_rx; i++) {
 		pkts[i] = p->op_buffer[i]->sym->m_src;
 		rte_crypto_op_free(p->op_buffer[i]);
@@ -242,8 +244,6 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 			(struct rte_port_crypto_writer_params *) params;
 	struct rte_port_crypto_writer *port;
 
-	printf("######## rte_port_crypto_writer_create begin\n");
-
 	/* Memory allocation */
 	port = rte_zmalloc_socket("PORT", sizeof(*port),
 			RTE_CACHE_LINE_SIZE, socket_id);
@@ -267,8 +267,6 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
 
-	printf("######## rte_port_crypto_writer_create end\n");
-
 	return port;
 }
 
@@ -276,6 +274,9 @@ static inline void
 enqueue_burst(struct rte_port_crypto_writer *p)
 {
 	uint32_t nb_tx;
+
+	printf("######## crypto_enqueue_burst begin: p->nb_ops=%d\n", p->nb_ops);
+			p->nb_ops, p->burst_sz);
 
 	nb_tx = rte_cryptodev_enqueue_burst(p->dev_id, p->qp_id,
 			 p->op_buffer, p->nb_ops);
@@ -296,6 +297,9 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 {
 	struct rte_port_crypto_writer *p =
 		(struct rte_port_crypto_writer *) port;
+
+	printf("######## crypto_tx begin: p->nb_ops=%d, p->burst_sz=%d\n",
+ 			p->nb_ops, p->burst_sz);
 
 	if(p->nb_ops >= p->burst_sz)
 		return 0;
@@ -397,6 +401,8 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 
 	if (p->nb_ops >= p->burst_sz)
 		enqueue_burst(p);
+
+	printf("######## crypto_tx end\n");
 
 	return 0;
 }

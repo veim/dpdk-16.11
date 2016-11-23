@@ -893,8 +893,6 @@ rte_pipeline_port_out_create(struct rte_pipeline *p,
 	uint32_t id;
 	int status;
 
-	printf("######## rte_pipeline_port_out_create begin\n");
-
 	/* Check input arguments */
 	status = rte_pipeline_port_out_check_params(p, params, port_id);
 	if (status != 0)
@@ -921,8 +919,6 @@ rte_pipeline_port_out_create(struct rte_pipeline *p,
 
 	/* Initialize port internal data structure */
 	port->h_port = h_port;
-
-	printf("######## rte_pipeline_port_out_create end\n");
 
 	return 0;
 }

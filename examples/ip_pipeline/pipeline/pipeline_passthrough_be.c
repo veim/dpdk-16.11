@@ -789,9 +789,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 	p->n_ports_out = params->n_ports_out;
 	p->n_tables = p->n_ports_in;
 
-	PLOG(p, HIGH, "pipeline_created, n_ports_i=%d, n_ports_o=%d, n_tables=%d\n",
-			p->n_ports_in, p->n_ports_out, p->n_tables);
-
 	/*Input ports*/
 	for (i = 0; i < p->n_ports_in; i++) {
 		struct rte_pipeline_port_in_params port_params = {
@@ -803,8 +800,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.arg_ah = p_pt,
 			.burst_size = params->port_in[i].burst_size,
 		};
-
-		PLOG(p, HIGH, "before rte_pipeline_port_in_create, i=%d\n", i);
 
 		int status = rte_pipeline_port_in_create(p->p,
 			&port_params,
@@ -828,8 +823,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.arg_ah = NULL,
 		};
 
-		PLOG(p, HIGH, "before rte_pipeline_port_out_create, i=%d\n", i);
-
 		int status = rte_pipeline_port_out_create(p->p,
 			&port_params,
 			&p->port_out_id[i]);
@@ -852,8 +845,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 			.action_data_size = 0,
 		};
 
-		PLOG(p, HIGH, "before rte_pipeline_table_create, i=%d\n", i);
-
 		int status = rte_pipeline_table_create(p->p,
 			&table_params,
 			&p->table_id[i]);
@@ -867,8 +858,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 
 	/* Connecting input ports to tables */
 	for (i = 0; i < p->n_ports_in; i++) {
-
-		PLOG(p, HIGH, "before rte_pipeline_port_in_connect_to_table, i=%d\n", i);
 
 		int status = rte_pipeline_port_in_connect_to_table(p->p,
 			p->port_in_id[i],
@@ -894,8 +883,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 
 		struct rte_pipeline_table_entry *default_entry_ptr;
 
-		PLOG(p, HIGH, "before rte_pipeline_table_default_entry_add, i=%d\n", i);
-
 		int status = rte_pipeline_table_default_entry_add(p->p,
 			p->table_id[i],
 			&default_entry,
@@ -910,8 +897,6 @@ pipeline_passthrough_init(struct pipeline_params *params,
 
 	/* Enable input ports */
 	for (i = 0; i < p->n_ports_in; i++) {
-
-		PLOG(p, HIGH, "before rte_pipeline_port_in_enable, i=%d\n", i);
 
 		int status = rte_pipeline_port_in_enable(p->p,
 			p->port_in_id[i]);
