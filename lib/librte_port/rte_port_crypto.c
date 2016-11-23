@@ -388,6 +388,8 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 					uint8_t *) + ipdata_offset + data_len;
 		}
 
+		printf("######## crypto_tx: auth: digest.data set\n");
+
 		op->sym->auth.digest.phys_addr = rte_pktmbuf_mtophys_offset(pkt,
 				rte_pktmbuf_pkt_len(pkt) - p->digest_length);
 		op->sym->auth.digest.length = p->digest_length;
