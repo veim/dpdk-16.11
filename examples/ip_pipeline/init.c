@@ -2023,8 +2023,12 @@ void app_pipeline_params_get(struct app_params *app,
 			params->do_cipher = p_ecry->do_cipher;
 			params->do_hash = p_ecry->do_hash;
 			params->hash_verify = p_ecry->hash_verify;
-			params->cipher_algo = p_ecry->cipher_xform.cipher.algo;
-			params->auth_algo = p_ecry->auth_xform.auth.algo;
+//			params->cipher_algo = p_ecry->cipher_xform.cipher.algo;
+//			params->auth_algo = p_ecry->auth_xform.auth.algo;
+			params->cipher_xform = p_ecry->cipher_xform;
+			params->iv = p_ecry->iv;
+			params->auth_xform = p_ecry->auth_xform;
+			params->aad = p_ecry->aad;
 
 			//out->burst_size = p_eci->burst;
 			break;

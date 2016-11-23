@@ -97,6 +97,12 @@ extern struct rte_port_in_ops rte_port_crypto_reader_ops;
 
 
 
+struct rte_crypto_key {
+	uint8_t *data;
+	uint32_t length;
+	phys_addr_t phys_addr;
+};
+
 /** crypto_writer port parameters */
 struct rte_port_crypto_writer_params {
    /* */
@@ -112,8 +118,13 @@ struct rte_port_crypto_writer_params {
    uint8_t do_cipher;
    uint8_t do_hash;
    uint8_t hash_verify;
-   enum rte_crypto_cipher_algorithm cipher_algo;
-   enum rte_crypto_auth_algorithm auth_algo;
+ //  enum rte_crypto_cipher_algorithm cipher_algo;
+   struct rte_crypto_sym_xform cipher_xform;
+   struct rte_crypto_key iv;
+
+   struct rte_crypto_sym_xform auth_xform;
+   struct rte_crypto_key aad;
+//   enum rte_crypto_auth_algorithm auth_algo;
    enum rte_crypto_op_type op_type;
 
    uint32_t burst_sz;

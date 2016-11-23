@@ -139,11 +139,11 @@ enum ecry_chain_type {
 	HASH_ONLY
 };
 
-struct crypto_key {
+/*struct crypto_key {
 	uint8_t *data;
 	uint32_t length;
 	phys_addr_t phys_addr;
-};
+};*/
 
 #define MAX_STR_LEN 32
 
@@ -168,14 +168,14 @@ struct app_ecry_params {
 	struct rte_crypto_sym_xform cipher_xform;
 	unsigned ckey_param;
 	int ckey_random_size;
-	struct crypto_key iv;
+	struct rte_crypto_key iv;
 	unsigned iv_param;
 	int iv_random_size;
 
 	struct rte_crypto_sym_xform auth_xform;
 	uint8_t akey_param;
 	int akey_random_size;
-	struct crypto_key aad;
+	struct rte_crypto_key aad;
 	unsigned aad_param;
 	int aad_random_size;
 

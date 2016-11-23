@@ -226,8 +226,13 @@ struct rte_port_crypto_writer {
 	uint8_t do_cipher;
 	uint8_t do_hash;
 	uint8_t hash_verify;
-	enum rte_crypto_cipher_algorithm cipher_algo;
-	enum rte_crypto_auth_algorithm auth_algo;
+//	enum rte_crypto_cipher_algorithm cipher_algo;
+//	enum rte_crypto_auth_algorithm auth_algo;
+	struct rte_crypto_sym_xform cipher_xform;
+	struct rte_crypto_key iv;
+
+	struct rte_crypto_sym_xform auth_xform;
+	struct rte_crypto_key aad;
 
 	enum rte_crypto_op_type op_type;
 	struct rte_crypto_op *op_buffer[MAX_PKT_BURST];
@@ -266,12 +271,18 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->block_size = conf->block_size;
 /*	port->op_pool = conf->op_pool;*/
 	port->session = conf->session;
-	port->op_type = conf->op_type;
+
 	port->do_cipher = conf->do_cipher;
 	port->do_hash = conf->do_hash;
 	port->hash_verify = conf->hash_verify;
-	port->cipher_algo = conf->cipher_algo;
-	port->auth_algo = conf->auth_algo;
+//	port->cipher_algo = conf->cipher_algo;
+//	port->auth_algo = conf->auth_algo;
+	port->cipher_xform = conf->cipher_xform;
+	port->iv = conf->iv;
+	port->auth_xform = conf->auth_xform;
+	port->aad = conf->aad;
+	
+	port->op_type = conf->op_type;
 	port->burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
 
@@ -367,8 +378,8 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	struct rte_crypto_op *op = p->op_buffer[p->nb_ops - 1];
 	rte_crypto_op_attach_sym_session(op, p->session);
 
-	printf("######## crypto_tx here: do_hash=%d, do_cipher=%d\n",
-			p->do_hash, p->do_cipher);
+	printf("######## crypto_tx: do_hash=%d, do_cipher=%d, hash_verify=%d\n",
+			p->do_hash, p->do_cipher, p->hash_verify);
 
 	if (p->do_hash) {
 		if (!p->hash_verify) {
