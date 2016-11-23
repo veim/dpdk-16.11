@@ -319,10 +319,10 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	unsigned ipdata_offset, pad_len, data_len;
 	char *padding;
 
+	eth_hdr = rte_pktmbuf_mtod(pkt, struct ether_hdr *);
+
 	printf("######## crypto_tx here: eth_hdr is %s\n",
 			(eth_hdr == NULL) ? "NULL" : "val");
-
-	eth_hdr = rte_pktmbuf_mtod(pkt, struct ether_hdr *);
 
 	if (eth_hdr->ether_type != rte_cpu_to_be_16(ETHER_TYPE_IPv4))
 		return -1;
