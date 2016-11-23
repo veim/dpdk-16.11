@@ -220,9 +220,6 @@ struct rte_port_crypto_writer {
 	struct rte_mempool *op_pool;
 	struct rte_cryptodev_sym_session *session;
 
-	struct crypto_key iv;
-	struct crypto_key aad;
-
 	uint8_t do_cipher;
 	uint8_t do_hash;
 	uint8_t hash_verify;
@@ -281,7 +278,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->iv = conf->iv;
 	port->auth_xform = conf->auth_xform;
 	port->aad = conf->aad;
-	
+
 	port->op_type = conf->op_type;
 	port->burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
@@ -396,9 +393,10 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 		op->sym->auth.digest.length = p->digest_length;
 
 		/* For wireless algorithms, offset/length must be in bits */
-		if (p->auth_algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 ||
-				p->auth_algo == RTE_CRYPTO_AUTH_KASUMI_F9 ||
-				p->auth_algo == RTE_CRYPTO_AUTH_ZUC_EIA3) {
+//		if (p->auth_algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 || maybe wrong, by veim
+		if (p->auth_xform.auth.algo == RTE_CRYPTO_AUTH_SNOW3G_UIA2 ||
+				p->auth_xform.auth.algo == RTE_CRYPTO_AUTH_KASUMI_F9 ||
+				p->auth_xform.auth.algo == RTE_CRYPTO_AUTH_ZUC_EIA3) {
 			op->sym->auth.data.offset = ipdata_offset << 3;
 			op->sym->auth.data.length = data_len << 3;
 		} else {
@@ -419,9 +417,9 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 		op->sym->cipher.iv.length = p->iv.length;
 
 		/* For wireless algorithms, offset/length must be in bits */
-		if (p->cipher_algo == RTE_CRYPTO_CIPHER_SNOW3G_UEA2 ||
-				p->cipher_algo == RTE_CRYPTO_CIPHER_KASUMI_F8 ||
-				p->cipher_algo == RTE_CRYPTO_CIPHER_ZUC_EEA3) {
+		if (p->cipher_xform.cipher.algo == RTE_CRYPTO_CIPHER_SNOW3G_UEA2 ||
+				p->cipher_xform.cipher.algo == RTE_CRYPTO_CIPHER_KASUMI_F8 ||
+				p->cipher_xform.cipher.algo == RTE_CRYPTO_CIPHER_ZUC_EEA3) {
 			op->sym->cipher.data.offset = ipdata_offset << 3;
 			op->sym->cipher.data.length = data_len << 3;
 		} else {
