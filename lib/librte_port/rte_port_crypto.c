@@ -351,7 +351,7 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	pad_len = data_len % p->block_size ? p->block_size -
 			(data_len % p->block_size) : 0;
 
-	printf("######## crypto_tx here: pad_len=%d\n", pad_len;
+	printf("######## crypto_tx here: pad_len=%d\n", pad_len);
 
 	if (pad_len) {
 		padding = rte_pktmbuf_append(pkt, pad_len);
