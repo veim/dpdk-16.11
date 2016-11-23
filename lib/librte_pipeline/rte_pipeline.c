@@ -844,8 +844,8 @@ rte_pipeline_port_in_create(struct rte_pipeline *p,
 	int status;
 
 	printf("rte_pipeline_port_in_crate: p is %s, params is %s, port_id is %s\n",
-			(p == NULL) ? "NULL" : "val", (params == NULL) ? "NULL" : "val", 
-			(port_id == NULL) ? "NULL" ："val");
+			(p == NULL) ? "NULL" : "val", (params == NULL) ? "NULL" : "val",
+			(port_id == NULL) ? "NULL" : "val");
 
 	/* Check input arguments */
 	status = rte_pipeline_port_in_check_params(p, params, port_id);
