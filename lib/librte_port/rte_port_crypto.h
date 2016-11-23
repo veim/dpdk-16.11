@@ -110,7 +110,7 @@ struct rte_port_crypto_writer_params {
    /**   */
    uint16_t qp_id;
    uint16_t block_size;
-   unsigned digest_length;
+   uint16_t digest_length;
 
    struct rte_mempool *op_pool;
    struct rte_cryptodev_sym_session *session;

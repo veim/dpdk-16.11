@@ -177,7 +177,8 @@ struct l2fwd_crypto_params {
 	uint8_t dev_id;
 	uint8_t qp_id;
 
-	unsigned digest_length;
+//	unsigned digest_length; as the rte_pktmbuf_append need uint16_t
+	uint16_t digest_length;
 	unsigned block_size;
 
 	struct l2fwd_key iv;
