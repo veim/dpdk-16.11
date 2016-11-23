@@ -380,7 +380,7 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	printf("######## crypto_tx: data_len=%d, p->digest_length=%u\n",
 					data_len, p->digest_length);
 	printf("######## crypto_tx: op= %"PRIu64", op->sym is %s\n",
-	 		op, (op->sym == NULL)?"NULL":"val");
+	 		(unsigned long)op, (op->sym == NULL)?"NULL":"val");
 
 	if (p->do_hash) {
 		if (!p->hash_verify) {
