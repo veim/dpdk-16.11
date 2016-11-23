@@ -105,8 +105,6 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 			(struct rte_port_crypto_reader_params *) params;
 	struct rte_port_crypto_reader *port;
 
-	printf("######## rte_port_crypto_reader_create begin\n");
-
 	/* Check input parameters */
 	if (conf == NULL) {
 		RTE_LOG(ERR, PORT, "%s: params is NULL\n", __func__);
@@ -125,8 +123,6 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	port->dev_id = conf->dev_id;
 	port->qp_id = conf->qp_id;
 	port->burst_sz = conf->burst_sz;
-
-	printf("######## rte_port_crypto_reader_create end\n");
 
 	return port;
 }
@@ -246,13 +242,8 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 			(struct rte_port_crypto_writer_params *) params;
 	struct rte_port_crypto_writer *port;
 
-	/* Check input parameters */
-/*	if ((conf == NULL) ||
-		(conf->ops == NULL)) {
-		RTE_LOG(ERR, PORT, "%s: Invalid input parameters\n", __func__);
-		return NULL;
-	}
-*/
+	printf("######## rte_port_crypto_writer_create begin\n");
+
 	/* Memory allocation */
 	port = rte_zmalloc_socket("PORT", sizeof(*port),
 			RTE_CACHE_LINE_SIZE, socket_id);
@@ -275,6 +266,8 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->auth_algo = conf->auth_algo;
 	port->burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
+
+	printf("######## rte_port_crypto_writer_create end\n");
 
 	return port;
 }
