@@ -319,6 +319,9 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	unsigned ipdata_offset, pad_len, data_len;
 	char *padding;
 
+	printf("######## crypto_tx here: eth_hdr is %s\n",
+			(eth_hdr == NULL) ? "NULL" : "val");
+
 	eth_hdr = rte_pktmbuf_mtod(pkt, struct ether_hdr *);
 
 	if (eth_hdr->ether_type != rte_cpu_to_be_16(ETHER_TYPE_IPv4))
@@ -329,17 +332,26 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	ip_hdr = (struct ipv4_hdr *)(rte_pktmbuf_mtod(pkt, char *) +
 			ipdata_offset);
 
+	printf("######## crypto_tx here: ip_hdr is %s\n",
+			(ip_hdr == NULL) ? "NULL" : "val");
+
+
 	ipdata_offset += (ip_hdr->version_ihl & IPV4_HDR_IHL_MASK)
 			* IPV4_IHL_MULTIPLIER;
 
 	/* Zero pad data to be crypto'd so it is block aligned */
 	data_len  = rte_pktmbuf_data_len(pkt) - ipdata_offset;
 
+	printf("######## crypto_tx here: data_len=%d, block_size=%d\n",
+			data_len, p->block_size);
+
 	if (p->do_hash && p->hash_verify)
 		data_len -= p->digest_length;
 
 	pad_len = data_len % p->block_size ? p->block_size -
 			(data_len % p->block_size) : 0;
+
+	printf("######## crypto_tx here: pad_len=%d\n", pad_len;
 
 	if (pad_len) {
 		padding = rte_pktmbuf_append(pkt, pad_len);
@@ -353,6 +365,9 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	/* Set crypto operation data parameters */
 	struct rte_crypto_op *op = p->op_buffer[p->nb_ops - 1];
 	rte_crypto_op_attach_sym_session(op, p->session);
+
+	printf("######## crypto_tx here: do_hash=%d, do_cipher=%d\n",
+			p->do_hash, p->do_cipher);
 
 	if (p->do_hash) {
 		if (!p->hash_verify) {
