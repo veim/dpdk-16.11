@@ -319,7 +319,7 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	if(p->nb_ops >= p->burst_sz)
 		return 0;
 
-	p->op_buffer[p->nb_ops++] = rte_crypto_op_alloc(
+	p->op_buffer[p->nb_ops] = rte_crypto_op_alloc(
 			p->op_pool, p->op_type);
 
 	struct ether_hdr *eth_hdr;
@@ -372,14 +372,15 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 	}
 
 	/* Set crypto operation data parameters */
-	struct rte_crypto_op *op = p->op_buffer[p->nb_ops - 1];
+	struct rte_crypto_op *op = p->op_buffer[p->nb_ops];
 	rte_crypto_op_attach_sym_session(op, p->session);
 
 	printf("######## crypto_tx: do_hash=%d, do_cipher=%d, hash_verify=%d\n",
 			p->do_hash, p->do_cipher, p->hash_verify);
 	printf("######## crypto_tx: data_len=%d, p->digest_length=%u\n",
 					data_len, p->digest_length);
-	printf("######## crypto_tx: op->sym is %s\n", (op->sym == NULL)?"NULL":"val");
+	printf("######## crypto_tx: op= %"PRIu64", op->sym is %s\n",
+	 		op, (op->sym == NULL)?"NULL":"val");
 
 	if (p->do_hash) {
 		if (!p->hash_verify) {
@@ -454,6 +455,7 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 
 	op->sym->m_src = pkt;
 
+	p->nb_ops ++;
 	if (p->nb_ops >= p->burst_sz)
 		enqueue_burst(p);
 
