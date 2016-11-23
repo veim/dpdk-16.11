@@ -379,14 +379,14 @@ rte_port_crypto_writer_tx(void *port, struct rte_mbuf *pkt)
 			p->do_hash, p->do_cipher, p->hash_verify);
 	printf("######## crypto_tx: data_len=%d, p->digest_length=%u\n",
 					data_len, p->digest_length);
+	printf("######## crypto_tx: op->sym is %s\n", (op->sym == NULL)?"NULL":"val");
+
 	if (p->do_hash) {
 		if (!p->hash_verify) {
 			/* Append space for digest to end of packet */
-			printf("######## crypto_tx here: 0\n");
 			op->sym->auth.digest.data = (uint8_t *)rte_pktmbuf_append(pkt,
 					p->digest_length);
 		} else {
-			printf("######## crypto_tx here: 1\n");
 			op->sym->auth.digest.data = rte_pktmbuf_mtod(pkt,
 					uint8_t *) + ipdata_offset + data_len;
 		}
