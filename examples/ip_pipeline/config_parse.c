@@ -178,6 +178,10 @@ static const struct app_ecry_params ecry_params_default = {
 //	unsigned sessionless:1;
 	.chain_type = CIPHER_HASH,
 
+	.do_hash = 1,
+	.do_cipher = 1,
+	.hash_verify = 0,
+
 	.cipher_xform = {
 		.type = RTE_CRYPTO_SYM_XFORM_CIPHER,
 		.next = NULL,

@@ -161,6 +161,10 @@ struct app_ecry_params {
 
 	enum ecry_chain_type chain_type;
 
+	uint8_t do_cipher;
+	uint8_t do_hash;
+	uint8_t hash_verify;
+
 	struct rte_crypto_sym_xform cipher_xform;
 	unsigned ckey_param;
 	int ckey_random_size;
