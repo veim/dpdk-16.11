@@ -843,9 +843,7 @@ rte_pipeline_port_in_create(struct rte_pipeline *p,
 	uint32_t id;
 	int status;
 
-	printf("rte_pipeline_port_in_crate: p is %s, params is %s, port_id is %s\n",
-			(p == NULL) ? "NULL" : "val", (params == NULL) ? "NULL" : "val",
-			(port_id == NULL) ? "NULL" : "val");
+	printf("######## rte_pipeline_port_in_create begin\n");
 
 	/* Check input arguments */
 	status = rte_pipeline_port_in_check_params(p, params, port_id);
@@ -862,9 +860,6 @@ rte_pipeline_port_in_create(struct rte_pipeline *p,
 		return -EINVAL;
 	}
 
-	printf("rte_port_crypto_reader_create finished, port is %s\n",
-			(port == NULL) ? "NULL" : "val");
-
 	/* Commit current table to the pipeline */
 	p->num_ports_in++;
 	*port_id = id;
@@ -879,6 +874,8 @@ rte_pipeline_port_in_create(struct rte_pipeline *p,
 	port->table_id = RTE_TABLE_INVALID;
 	port->h_port = h_port;
 	port->next = NULL;
+
+	printf("######## rte_pipeline_port_in_create end\n");
 
 	return 0;
 }

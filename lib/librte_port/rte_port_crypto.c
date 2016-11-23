@@ -105,7 +105,7 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 			(struct rte_port_crypto_reader_params *) params;
 	struct rte_port_crypto_reader *port;
 
-	printf("rte_port_crypto_reader_create begin\n");
+	printf("######## rte_port_crypto_reader_create begin\n");
 
 	/* Check input parameters */
 	if (conf == NULL) {
@@ -125,6 +125,8 @@ rte_port_crypto_reader_create(void *params, int socket_id)
 	port->dev_id = conf->dev_id;
 	port->qp_id = conf->qp_id;
 	port->burst_sz = conf->burst_sz;
+
+	printf("######## rte_port_crypto_reader_create end\n");
 
 	return port;
 }
