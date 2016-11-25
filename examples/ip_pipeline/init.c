@@ -1219,7 +1219,7 @@ initialize_crypto_session(struct app_ecry_params *p_ecry, uint8_t cdev_id)
 	/* Setup Cipher Parameters */
 	p_ecry->session = rte_cryptodev_sym_session_create(cdev_id, first_xform);
 
-	printf("######## Initialised session, with return= %s...",
+	printf("######## Initialised session, with return= %s\n",
 			(p_ecry->session == NULL) ? "NULL" : "val");
 
 }
@@ -1874,8 +1874,8 @@ void app_pipeline_params_get(struct app_params *app,
 		{
 			struct app_pktq_eci_params *p_eci =
 				&app->eci_params[in->id];
-			struct app_ecry_params *p_ecry =
-				app_get_cdev_for_eci(app, p_eci);
+//			struct app_ecry_params *p_ecry =
+//				app_get_cdev_for_eci(app, p_eci);
 
 			uint32_t cdev_id, qp_id;
 			sscanf(p_eci->name, "ECI%" SCNu32 ".%" SCNu32, &cdev_id, &qp_id);
