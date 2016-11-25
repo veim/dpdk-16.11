@@ -1781,6 +1781,7 @@ parse_crypto_algo(unsigned *algo, char *optarg)
 	unsigned i;
 
 	for (i = 0; i < RTE_CRYPTO_AUTH_LIST_END; i++) {
+		printf("optalgo is %s, try %u\n", optarg, i);
 		if (!strcmp(supported_auth_algo[i], optarg)) {
 			*algo = i;
 			return 0;
