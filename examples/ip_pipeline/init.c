@@ -1277,6 +1277,9 @@ app_init_ecry(struct app_params *app)
 				p_ecry->chain_type == CIPHER_ONLY) {
 
 			/* Check if device supports cipher algo */
+			printf("[INIT ECRY] ecry_algo=%d\n",
+					p_ecry->cipher_xform.cipher.algo);
+
 			i = 0;
 			opt_cipher_algo = p_ecry->cipher_xform.cipher.algo;
 			cap = &dev_info.capabilities[i];
@@ -1385,6 +1388,9 @@ app_init_ecry(struct app_params *app)
 				p_ecry->chain_type == HASH_ONLY) {
 
 			/* Check if device supports auth algo */
+			printf("[INIT ECRY] auth_algo=%d\n",
+			 		p_ecry->auth_xform.auth.algo);
+
 			i = 0;
 			opt_auth_algo = p_ecry->auth_xform.auth.algo;
 			cap = &dev_info.capabilities[i];

@@ -1772,6 +1772,85 @@ parse_txq(struct app_params *app,
 	free(entries);
 }
 
+
+
+/** Parse crypto cipher, auth operation argument */
+static int
+parse_crypto_algo(enum rte_crypto_auth_algorithm *algo, char *optarg)
+{
+	unsigned i;
+
+	for (i = 0; i < RTE_CRYPTO_AUTH_LIST_END; i++) {
+		if (!strcmp(supported_auth_algo[i], optarg)) {
+			*algo = (enum rte_crypto_auth_algorithm)i;
+			return 0;
+		}
+	}
+
+	printf("Authentication algorithm specified not supported!\n");
+	return -1;
+}
+
+static void
+parse_ecry(struct app_params *app,
+	const char *section_name,
+	struct rte_cfgfile *cfg)
+{
+	struct app_ecry_params *param;
+	struct rte_cfgfile_entry *entries;
+	int n_entries, i;
+	ssize_t param_idx;
+
+	n_entries = rte_cfgfile_section_num_entries(cfg, section_name);
+	PARSE_ERROR_SECTION_NO_ENTRIES((n_entries > 0), section_name);
+
+	entries = malloc(n_entries * sizeof(struct rte_cfgfile_entry));
+	PARSE_ERROR_MALLOC(entries != NULL);
+
+	rte_cfgfile_section_entries(cfg, section_name, entries, n_entries);
+
+	param_idx = APP_PARAM_ADD(app->ecry_params, section_name);
+	param = &app->ecry_params[param_idx];
+	PARSE_CHECK_DUPLICATE_SECTION(param);
+
+//	APP_PARAM_ADD_LINK_FOR_TM(app, section_name);
+
+	for (i = 0; i < n_entries; i++) {
+		struct rte_cfgfile_entry *ent = &entries[i];
+
+		if (strcmp(ent->name, "cfg") == 0) {
+			param->file_name = strdup(ent->value);
+			PARSE_ERROR_MALLOC(param->file_name != NULL);
+			continue;
+		}
+
+		if (strcmp(ent->name, "ecry_algo") == 0) {
+			int status = parse_crypto_algo(
+				&param->cipher_xform.cipher.algo, ent->value);
+
+			PARSE_ERROR((status == 0), section_name,
+				ent->name);
+			continue;
+		}
+
+		if (strcmp(ent->name, "auth_algo") == 0) {
+			int status = parse_crypto_algo(
+				&param->auth_xform.auth.algo, ent->value);
+
+			PARSE_ERROR((status == 0), section_name,
+				ent->name);
+			continue;
+		}
+
+		/* unrecognized */
+		PARSE_ERROR_INVALID(0, section_name, ent->name);
+	}
+
+	free(entries);
+}
+
+
+
 static void
 parse_swq(struct app_params *app,
 	const char *section_name,
@@ -2505,6 +2584,7 @@ static const struct config_section cfg_file_scheme[] = {
 	{"PIPELINE", 1, parse_pipeline},
 	{"MEMPOOL", 1, parse_mempool},
 	{"LINK", 1, parse_link},
+	{"ECRY", 1, parse_ecry}, /* added for parsing ECRYx section */
 	{"RXQ", 2, parse_rxq},
 	{"TXQ", 2, parse_txq},
 	{"SWQ", 1, parse_swq},
