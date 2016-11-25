@@ -1776,13 +1776,13 @@ parse_txq(struct app_params *app,
 
 /** Parse crypto cipher, auth operation argument */
 static int
-parse_crypto_algo(enum rte_crypto_auth_algorithm *algo, char *optarg)
+parse_crypto_algo(unsigned *algo, char *optarg)
 {
 	unsigned i;
 
 	for (i = 0; i < RTE_CRYPTO_AUTH_LIST_END; i++) {
 		if (!strcmp(supported_auth_algo[i], optarg)) {
-			*algo = (enum rte_crypto_auth_algorithm)i;
+			*algo = i;
 			return 0;
 		}
 	}
@@ -1818,15 +1818,9 @@ parse_ecry(struct app_params *app,
 	for (i = 0; i < n_entries; i++) {
 		struct rte_cfgfile_entry *ent = &entries[i];
 
-		if (strcmp(ent->name, "cfg") == 0) {
-			param->file_name = strdup(ent->value);
-			PARSE_ERROR_MALLOC(param->file_name != NULL);
-			continue;
-		}
-
 		if (strcmp(ent->name, "ecry_algo") == 0) {
 			int status = parse_crypto_algo(
-				&param->cipher_xform.cipher.algo, ent->value);
+					(unsigned)param->cipher_xform.cipher.algo, ent->value);
 
 			PARSE_ERROR((status == 0), section_name,
 				ent->name);
@@ -1835,7 +1829,7 @@ parse_ecry(struct app_params *app,
 
 		if (strcmp(ent->name, "auth_algo") == 0) {
 			int status = parse_crypto_algo(
-				&param->auth_xform.auth.algo, ent->value);
+					(unsigned)param->auth_xform.auth.algo, ent->value);
 
 			PARSE_ERROR((status == 0), section_name,
 				ent->name);
