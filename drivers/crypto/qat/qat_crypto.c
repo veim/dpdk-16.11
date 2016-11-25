@@ -862,13 +862,13 @@ qat_pmd_enqueue_op_burst(void *qp, struct rte_crypto_op **ops,
 	base_addr = (uint8_t *)queue->base_addr;
 	tail = queue->tail;
 
-	printf("######## qat_pmd_enqueue_op_burst: max_inflights=%d", queue->max_inflights);
+//	printf("######## qat_pmd_enqueue_op_burst: max_inflights=%d", queue->max_inflights);
 
 	/* Find how many can actually fit on the ring */
 	overflow = rte_atomic16_add_return(&tmp_qp->inflights16, nb_ops)
 				- queue->max_inflights;
 
-	printf(", overflow=%d\n", overflow);
+//	printf(", overflow=%d\n", overflow);
 
 	if (overflow > 0) {
 		rte_atomic16_sub(&tmp_qp->inflights16, overflow);
@@ -891,6 +891,8 @@ qat_pmd_enqueue_op_burst(void *qp, struct rte_crypto_op **ops,
 		nb_ops_sent++;
 		cur_op++;
 	}
+	printf("######## qat_pmd_enqueue_op_burst: nb_ops_sent=%d\n", nb_ops_sent);
+	
 kick_tail:
 	WRITE_CSR_RING_TAIL(tmp_qp->mmap_bar_addr, queue->hw_bundle_number,
 			queue->hw_queue_number, tail);
