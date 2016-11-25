@@ -176,10 +176,10 @@ static const struct app_ecry_params ecry_params_default = {
 //	uint32_t mempool_id;
 	.dev_type = CDEV_TYPE_HW,
 //	unsigned sessionless:1;
-	.chain_type = CIPHER_ONLY,
+	.chain_type = CIPHER_HASH,
 	.session = NULL,
 
-	.do_hash = 0,
+	.do_hash = 1,
 	.do_cipher = 1,
 	.hash_verify = 0,
 
