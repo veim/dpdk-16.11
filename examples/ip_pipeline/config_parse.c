@@ -177,6 +177,7 @@ static const struct app_ecry_params ecry_params_default = {
 	.dev_type = CDEV_TYPE_HW,
 //	unsigned sessionless:1;
 	.chain_type = CIPHER_ONLY,
+	.session = NULL,
 
 	.do_hash = 0,
 	.do_cipher = 1,

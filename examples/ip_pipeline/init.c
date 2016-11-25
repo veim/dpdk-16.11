@@ -1199,25 +1199,31 @@ check_type(struct app_ecry_params *p_ecry, struct rte_cryptodev_info *dev_info)
 	return -1;
 }
 
-static struct rte_cryptodev_sym_session *
+static void
 initialize_crypto_session(struct app_ecry_params *p_ecry, uint8_t cdev_id)
 {
 	struct rte_crypto_sym_xform *first_xform;
 
-	if (p_ecry->xform_chain == CIPHER_HASH) {
+	if (p_ecry->chain_type == CIPHER_HASH) {
 		first_xform = &p_ecry->cipher_xform;
 		first_xform->next = &p_ecry->auth_xform;
-	} else if (p_ecry->xform_chain == HASH_CIPHER) {
+	} else if (p_ecry->chain_type == HASH_CIPHER) {
 		first_xform = &p_ecry->auth_xform;
 		first_xform->next = &p_ecry->cipher_xform;
-	} else if (p_ecry->xform_chain == CIPHER_ONLY) {
+	} else if (p_ecry->chain_type == CIPHER_ONLY) {
 		first_xform = &p_ecry->cipher_xform;
 	} else {
 		first_xform = &p_ecry->auth_xform;
 	}
 
 	/* Setup Cipher Parameters */
-	return rte_cryptodev_sym_session_create(cdev_id, first_xform);
+	p_ecry->session = rte_cryptodev_sym_session_create(cdev_id, first_xform);
+	if (p_ecry->session == NULL)
+		return -1;
+	APP_LOG(app, HIGH, "Initialised session, with return= %s...",
+			(p_ecry->session == NULL) ? "NULL" : "val");
+
+	return 0;
 }
 
 /* key part of Initialization for crypto dev */
@@ -1554,14 +1560,9 @@ app_init_ecry(struct app_params *app)
 		app->enabled_cdevs[cdev_id] = 1;
 		app->enabled_cdev_count++;
 
-		p_ecry->session = initialize_crypto_session(p_ecry, cdev_id);
-		if (p_ecry->session == NULL)
-			return;
-		APP_LOG(app, HIGH, "Initialised session, with return= %s...",
-				(p_ecry->session == NULL) ? "NULL" : "val");
+		initialize_crypto_session(p_ecry, cdev_id);
 
 /*
-
 		op_pool = rte_crypto_op_pool_create("ecry_op_pool",
 				RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0,
 				rte_socket_id());
@@ -2050,6 +2051,8 @@ void app_pipeline_params_get(struct app_params *app,
 			params->burst_sz = p_eco->burst;
 			params->block_size = p_ecry->block_size;
 			params->digest_length = p_ecry->auth_xform.auth.digest_length;
+
+			params->session = p_ecry->session;
 
 			params->do_cipher = p_ecry->do_cipher;
 			params->do_hash = p_ecry->do_hash;

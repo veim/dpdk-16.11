@@ -160,6 +160,7 @@ struct app_ecry_params {
 	unsigned sessionless:1;
 
 	enum ecry_chain_type chain_type;
+	struct rte_cryptodev_sym_session *session;
 
 	uint8_t do_cipher;
 	uint8_t do_hash;
