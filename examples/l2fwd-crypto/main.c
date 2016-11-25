@@ -167,8 +167,8 @@ struct l2fwd_crypto_options {
 	int aad_random_size;
 
 	int digest_size;
-
-	uint16_t block_size;
+	unsigned block_size;
+//	uint16_t block_size;
 	char string_type[MAX_STR_LEN];
 };
 
@@ -179,8 +179,8 @@ struct l2fwd_crypto_params {
 
 //	unsigned digest_length; as the rte_pktmbuf_append need uint16_t
 	uint16_t digest_length;
-//	unsigned block_size;
-	uint16_t block_size;
+	unsigned block_size;
+//	uint16_t block_size;
 
 	struct l2fwd_key iv;
 	struct l2fwd_key aad;
