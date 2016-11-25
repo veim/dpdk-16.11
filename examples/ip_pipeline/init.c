@@ -1220,7 +1220,8 @@ initialize_crypto_session(struct app_ecry_params *p_ecry, uint8_t cdev_id)
 	p_ecry->session = rte_cryptodev_sym_session_create(cdev_id, first_xform);
 	if (p_ecry->session == NULL)
 		return -1;
-	APP_LOG(app, HIGH, "Initialised session, with return= %s...",
+
+	printf("######## Initialised session, with return= %s...",
 			(p_ecry->session == NULL) ? "NULL" : "val");
 
 	return 0;
