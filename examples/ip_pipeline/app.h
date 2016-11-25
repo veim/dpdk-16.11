@@ -1539,6 +1539,8 @@ app_get_link_for_kni(struct app_params *app, struct app_pktq_kni_params *p_kni)
 	return &app->link_params[link_param_idx];
 }
 
+void app_config_crypto_fill_supported_algorithm_tables(void);
+
 void app_pipeline_params_get(struct app_params *app,
 	struct app_pipeline_params *p_in,
 	struct pipeline_params *p_out);
