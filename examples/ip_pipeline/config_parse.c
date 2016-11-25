@@ -1820,7 +1820,7 @@ parse_ecry(struct app_params *app,
 
 		if (strcmp(ent->name, "ecry_algo") == 0) {
 			int status = parse_crypto_algo(
-					(unsigned)param->cipher_xform.cipher.algo, ent->value);
+					(unsigned *)&param->cipher_xform.cipher.algo, ent->value);
 
 			PARSE_ERROR((status == 0), section_name,
 				ent->name);
@@ -1829,7 +1829,7 @@ parse_ecry(struct app_params *app,
 
 		if (strcmp(ent->name, "auth_algo") == 0) {
 			int status = parse_crypto_algo(
-					(unsigned)param->auth_xform.auth.algo, ent->value);
+					(unsigned *)&param->auth_xform.auth.algo, ent->value);
 
 			PARSE_ERROR((status == 0), section_name,
 				ent->name);
