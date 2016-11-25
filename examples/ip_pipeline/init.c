@@ -1202,7 +1202,7 @@ app_init_ecry(struct app_params *app)
 
 	app->enabled_cdev_count = 0;
 
-	fill_supported_algorithm_tables();
+//	fill_supported_algorithm_tables();
 
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {

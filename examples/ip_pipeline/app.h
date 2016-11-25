@@ -615,7 +615,7 @@ char supported_auth_algo[RTE_CRYPTO_AUTH_LIST_END][MAX_STR_LEN];
 char supported_cipher_algo[RTE_CRYPTO_CIPHER_LIST_END][MAX_STR_LEN];
 
 static void
-app_cyrpto_fill_supported_algorithm_tables(void)
+app_crypto_fill_supported_algorithm_tables(void)
 {
 	unsigned i;
 
