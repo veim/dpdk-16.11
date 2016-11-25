@@ -285,12 +285,20 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 
 	printf("######## rte_port_crypto_writer_create: iv.data is %s\n",
 			(port->iv.data == NULL) ? "NULL" : "val");
-	printf("######## rte_port_crypto_writer_create: iv.data is %s\n",
-					(char *)(port->iv.data));
+
+	int i;
+	for(i = 0; i < port->iv.length; i++){
+		printf("%c ", char(port->iv.data[i]);
+	}
+	printf("\n");
+
 	printf("######## rte_port_crypto_writer_create: cipher.key.data is %s\n",
 					(port->cipher_xform.cipher.key.data == NULL) ? "NULL" : "val");
-	printf("######## rte_port_crypto_writer_create: cipher.key.data is %s\n",
-					(char *)(port->cipher_xform.cipher.key.data));
+
+	for(i = 0; i < port->cipher_xform.cipher.key.length; i++){
+		printf("%c ", char(port->cipher_xform.cipher.key.data[i]);
+	}
+	printf("\n");
 
 	return port;
 }
