@@ -291,7 +291,8 @@ enqueue_burst(struct rte_port_crypto_writer *p)
 {
 	uint32_t nb_tx;
 
-	printf("######## crypto_enqueue_burst: nb_ops=%d\n", p->nb_ops);
+	printf("######## crypto_enqueue_burst: dev_id=%d, qp_id=%d, nb_ops=%d\n",
+			p->dev_id, p->qp_id, p->nb_ops);
 
 	nb_tx = rte_cryptodev_enqueue_burst(p->dev_id, p->qp_id,
 			 p->op_buffer, p->nb_ops);
