@@ -282,17 +282,17 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->nb_ops = 0;
 
 	uint32_t i;
-	printf("[ECRY%"PRIu8"] ecry_algo=%d, auth_algo=%d\n", port->cdev_id,
+	printf("[ECRY%"PRIu8"] ecry_algo=%d, auth_algo=%d\n", port->dev_id,
 			(int)port->cipher_xform.cipher.algo,
 			(int)port->auth_xform.auth.algo);
 
-	printf("[ECRY%"PRIu8"] cipher.iv.data is :\n", port->cdev_id);
+	printf("[ECRY%"PRIu8"] cipher.iv.data is :\n", port->dev_id);
 	for(i = 0; i < port->iv.length; i++){
 		printf("%"PRIu8" ", port->iv.data[i]);
 	}
 	printf("\n");
 
-	printf("[ECRY%"PRIu8"] cipher.key.data is :\n", port->cdev_id);
+	printf("[ECRY%"PRIu8"] cipher.key.data is :\n", port->dev_id);
 	for(i = 0; i < port->cipher_xform.cipher.key.length; i++){
 		printf("%"PRIu8" ", port->cipher_xform.cipher.key.data[i]);
 	}
