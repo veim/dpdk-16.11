@@ -288,7 +288,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 
 	uint32_t i;
 	for(i = 0; i < port->iv.length; i++){
-		printf("%c ", char(port->iv.data[i]);
+		printf("%c ", char(port->iv.data[i]));
 	}
 	printf("\n");
 
@@ -296,7 +296,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 					(port->cipher_xform.cipher.key.data == NULL) ? "NULL" : "val");
 
 	for(i = 0; i < port->cipher_xform.cipher.key.length; i++){
-		printf("%c ", char(port->cipher_xform.cipher.key.data[i]);
+		printf("%c ", char(port->cipher_xform.cipher.key.data[i]));
 	}
 	printf("\n");
 
