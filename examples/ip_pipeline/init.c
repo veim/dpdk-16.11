@@ -1168,16 +1168,12 @@ generate_random_key(uint8_t *key, unsigned length)
 	int fd;
 	int ret;
 
-	printf("######## generate_random_key: length=%d\n", length);
-
 	fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0)
 		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");
 
 	ret = read(fd, key, length);
 	close(fd);
-
-	printf("######## generate_random_key: ret=%d\n", ret);
 
 	if (ret != (signed)length)
 		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");
@@ -1219,9 +1215,6 @@ initialize_crypto_session(struct app_ecry_params *p_ecry, uint8_t cdev_id)
 	/* Setup Cipher Parameters */
 	p_ecry->session = rte_cryptodev_sym_session_create(cdev_id, first_xform);
 
-	printf("######## Initialised session, with return= %s\n",
-			(p_ecry->session == NULL) ? "NULL" : "val");
-
 }
 
 /* key part of Initialization for crypto dev */
@@ -1253,11 +1246,9 @@ app_init_ecry(struct app_params *app)
 
 	fill_supported_algorithm_tables();
 
-	printf("######## cdev_count=%d， n_ecrys=%d\n", cdev_count, app->n_ecrys);
-
 	for (cdev_id = 0; cdev_id < cdev_count &&
 			app->enabled_cdev_count < app->n_ecrys; cdev_id++) {
-		printf("######## Initializing cdev_id=%d\n", cdev_id);
+		printf("[INIT ecry] Initializing cdev_id=%d ...\n", cdev_id);
 
 		struct rte_cryptodev_qp_conf qp_conf;
 		struct rte_cryptodev_info dev_info;
@@ -1272,7 +1263,7 @@ app_init_ecry(struct app_params *app)
 		};
 
 		rte_cryptodev_info_get(cdev_id, &dev_info);
-		printf("######## dev_info: driver_name=%s, dev_type=%d, max_nb_qps=%d\n",
+		printf("[INIT dev_info] driver_name=%s, dev_type=%d, max_nb_qps=%d\n",
 				dev_info.driver_name, dev_info.dev_type,
 				dev_info.max_nb_queue_pairs);
 
@@ -1285,17 +1276,12 @@ app_init_ecry(struct app_params *app)
 				p_ecry->chain_type == HASH_CIPHER ||
 				p_ecry->chain_type == CIPHER_ONLY) {
 
-			printf("######## set cipher params\n");
-
 			/* Check if device supports cipher algo */
 			i = 0;
 			opt_cipher_algo = p_ecry->cipher_xform.cipher.algo;
 			cap = &dev_info.capabilities[i];
 			while (cap->op != RTE_CRYPTO_OP_TYPE_UNDEFINED) {
 				cap_cipher_algo = cap->sym.cipher.algo;
-
-				printf("######## opt_c_algo=%d, cap_c_algo=%d\n",
-						opt_cipher_algo, cap_cipher_algo);
 
 				if (cap->sym.xform_type ==
 						RTE_CRYPTO_SYM_XFORM_CIPHER) {
@@ -1322,9 +1308,6 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided IV is supported
 			 * by the algorithm chosen.
 			 */
-			 printf("######## iv_param=%d, iv_random_size=%d\n",
-					 p_ecry->iv_param, p_ecry->iv_random_size);
-
 			if (p_ecry->iv_param) {
 				if (check_supported_size(p_ecry->iv.length,
 						cap->sym.cipher.iv_size.min,
@@ -1360,9 +1343,6 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided cipher key is supported
 			 * by the algorithm chosen.
 			 */
-			 printf("######## ckey_param=%d, ckey_random_size=%d\n",
-					 p_ecry->ckey_param, p_ecry->ckey_random_size);
-
 			if (p_ecry->ckey_param) {
 				if (check_supported_size(
 						p_ecry->cipher_xform.cipher.key.length,
@@ -1404,17 +1384,12 @@ app_init_ecry(struct app_params *app)
 				p_ecry->chain_type == HASH_CIPHER ||
 				p_ecry->chain_type == HASH_ONLY) {
 
-			printf("######## set auth params\n");
-
 			/* Check if device supports auth algo */
 			i = 0;
 			opt_auth_algo = p_ecry->auth_xform.auth.algo;
 			cap = &dev_info.capabilities[i];
 			while (cap->op != RTE_CRYPTO_OP_TYPE_UNDEFINED) {
 				cap_auth_algo = cap->sym.auth.algo;
-
-				printf("######## opt_a_algo=%d, cap_a_algo=%d\n",
-						opt_auth_algo, cap_auth_algo);
 
 				if ((cap->sym.xform_type == RTE_CRYPTO_SYM_XFORM_AUTH) &&
 						(cap_auth_algo == opt_auth_algo) &&
@@ -1439,9 +1414,6 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided AAD is supported
 			 * by the algorithm chosen.
 			 */
-			printf("######## aad_param=%d, aad_random_size=%d\n",
-					 p_ecry->aad_param, p_ecry->aad_random_size);
-
 			if (p_ecry->aad_param) {
 				if (check_supported_size(p_ecry->aad.length,
 						cap->sym.auth.aad_size.min,
@@ -1480,9 +1452,6 @@ app_init_ecry(struct app_params *app)
 			 * Check if length of provided auth key is supported
 			 * by the algorithm chosen.
 			 */
-			printf("######## akey_param=%d, akey_random_size=%d\n",
-					 p_ecry->akey_param, p_ecry->akey_random_size);
-
 			if (p_ecry->akey_param) {
 				if (check_supported_size(
 						p_ecry->auth_xform.auth.key.length,
@@ -1569,11 +1538,6 @@ app_init_ecry(struct app_params *app)
 
 		initialize_crypto_session(p_ecry, cdev_id);
 
-/*
-		op_pool = rte_crypto_op_pool_create("ecry_op_pool",
-				RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0,
-				rte_socket_id());
-*/
 	}
 
 	return 0;
@@ -2246,7 +2210,6 @@ app_init_pipelines(struct app_params *app)
 
 		app_pipeline_params_get(app, params, &pp);
 
-		APP_LOG(app, HIGH, "######## back-end init begin\n");
 		/* Back-end */
 		data->be = NULL;
 		if (ptype->be_ops->f_init) {
@@ -2257,7 +2220,6 @@ app_init_pipelines(struct app_params *app)
 					"init error\n", params->name);
 		}
 
-		APP_LOG(app, HIGH, "######## front-end init begin\n");
 		/* Front-end */
 		data->fe = NULL;
 		if (ptype->fe_ops->f_init) {
@@ -2381,9 +2343,8 @@ int app_init(struct app_params *app)
 	app_init_mempool(app);
 	app_init_link(app);
 
-	printf("######## app_init_ecry: begin\n");
+	APP_LOG(app, HIGH, "Initializing ecrys ...");
 	app_init_ecry(app);
-	printf("######## app_init_ecry: end\n");
 
 	app_init_swq(app);
 	app_init_tm(app);
@@ -2401,9 +2362,7 @@ int app_init(struct app_params *app)
 	app_pipeline_type_register(app, &pipeline_firewall);
 	app_pipeline_type_register(app, &pipeline_routing);
 
-	printf("######## app_init_pipelines begin\n");
 	app_init_pipelines(app);
-	printf("######## app_init_pipelines end\n");
 
 	app_init_threads(app);
 

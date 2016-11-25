@@ -140,8 +140,6 @@ rte_port_crypto_reader_rx(void *port, struct rte_mbuf **pkts, uint32_t n_pkts)
 	nb_rx = rte_cryptodev_dequeue_burst(p->dev_id, p->qp_id,
 			p->op_buffer, n_pkts_need);
 
-//	printf("######## crypto_rx: nb_rx=%d\n", nb_rx);
-
 	for (i = 0; i < nb_rx; i++) {
 		pkts[i] = p->op_buffer[i]->sym->m_src;
 		rte_crypto_op_free(p->op_buffer[i]);
@@ -284,13 +282,13 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->nb_ops = 0;
 
 	uint32_t i;
-	printf("######## rte_port_crypto_writer_create: iv.data is :\n");
+	printf("[ECRY] rte_port_crypto_writer_create: iv.data is :\n");
 	for(i = 0; i < port->iv.length; i++){
 		printf("%"PRIu8" ", port->iv.data[i]);
 	}
 	printf("\n");
 
-	printf("######## rte_port_crypto_writer_create: cipher.key.data is :\n");
+	printf("[ECRY] rte_port_crypto_writer_create: cipher.key.data is :\n");
 	for(i = 0; i < port->cipher_xform.cipher.key.length; i++){
 		printf("%"PRIu8" ", port->cipher_xform.cipher.key.data[i]);
 	}
@@ -304,13 +302,8 @@ enqueue_burst(struct rte_port_crypto_writer *p)
 {
 	uint32_t nb_tx;
 
-//	printf("######## crypto_enqueue_burst: dev_id=%d, qp_id=%d, nb_ops=%d\n",
-//			p->dev_id, p->qp_id, p->nb_ops);
-
 	nb_tx = rte_cryptodev_enqueue_burst(p->dev_id, p->qp_id,
 			 p->op_buffer, p->nb_ops);
-
-//	printf("######## crypto_enqueue_burst: nb_tx=%d\n", nb_tx);
 
 //	RTE_PORT_ETHDEV_WRITER_STATS_PKTS_DROP_ADD(p, p->nb_ops - nb_tx);
 	if (unlikely(nb_tx < p->nb_ops)) {
