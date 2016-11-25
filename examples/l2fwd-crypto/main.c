@@ -599,17 +599,12 @@ generate_random_key(uint8_t *key, unsigned length)
 	int fd;
 	int ret;
 
-	printf("######## generate_random_key: length=%d, key==0 is %s\n",
-	 		length, (key==NULL) ? "true" : "false");
-
 	fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0)
 		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");
 
 	ret = read(fd, key, length);
 	close(fd);
-
-	printf("######## generate_random_key: ret=%d\n", ret);
 
 	if (ret != (signed)length)
 		rte_exit(EXIT_FAILURE, "Failed to generate random key\n");

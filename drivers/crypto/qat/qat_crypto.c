@@ -880,7 +880,6 @@ qat_pmd_enqueue_op_burst(void *qp, struct rte_crypto_op **ops,
 	while (nb_ops_sent != nb_ops_possible) {
 		ret = qat_write_hw_desc_entry(*cur_op, base_addr + tail);
 		if (ret != 0) {
-			printf("######## qat_pmd_enqueue_op_burst: ret=%d\n", ret);
 			tmp_qp->stats.enqueue_err_count++;
 			if (nb_ops_sent == 0)
 				return 0;
@@ -891,8 +890,7 @@ qat_pmd_enqueue_op_burst(void *qp, struct rte_crypto_op **ops,
 		nb_ops_sent++;
 		cur_op++;
 	}
-	printf("######## qat_pmd_enqueue_op_burst: nb_ops_sent=%d\n", nb_ops_sent);
-	
+
 kick_tail:
 	WRITE_CSR_RING_TAIL(tmp_qp->mmap_bar_addr, queue->hw_bundle_number,
 			queue->hw_queue_number, tail);
