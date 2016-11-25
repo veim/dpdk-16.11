@@ -40,6 +40,9 @@ main(int argc, char **argv)
 {
 	rte_openlog_stream(stderr);
 
+	/* fill table needed by config parsing for crypto */
+	app_cyrpto_fill_supported_algorithm_tables();
+
 	/* Config */
 	app_config_init(&app);
 
