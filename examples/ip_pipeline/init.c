@@ -1352,6 +1352,10 @@ app_init_ecry(struct app_params *app)
 			} else
 				p_ecry->iv.length = cap->sym.cipher.iv_size.min;
 
+			if (!p_ecry->iv_param)
+				generate_random_key(p_ecry->iv.data, p_ecry->iv.length);
+
+
 			/*
 			 * Check if length of provided cipher key is supported
 			 * by the algorithm chosen.
@@ -1466,7 +1470,11 @@ app_init_ecry(struct app_params *app)
 				p_ecry->aad.length = cap->sym.auth.aad_size.min;
 
 			p_ecry->auth_xform.auth.add_auth_data_length =
-						p_ecry->aad.length;
+					p_ecry->aad.length;
+
+			if (!p_ecry->aad_param)
+				generate_random_key(p_ecry->aad.data, p_ecry->aad.length);
+
 
 			/*
 			 * Check if length of provided auth key is supported
@@ -1509,6 +1517,7 @@ app_init_ecry(struct app_params *app)
 				generate_random_key(
 					p_ecry->auth_xform.auth.key.data,
 					p_ecry->auth_xform.auth.key.length);
+
 
 			/* Check if digest size is supported by the algorithm. */
 			if (p_ecry->digest_size != -1) {
