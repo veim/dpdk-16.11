@@ -286,7 +286,7 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	printf("######## rte_port_crypto_writer_create: iv.data is %s\n",
 			(port->iv.data == NULL) ? "NULL" : "val");
 
-	int i;
+	uint32_t i;
 	for(i = 0; i < port->iv.length; i++){
 		printf("%c ", char(port->iv.data[i]);
 	}
