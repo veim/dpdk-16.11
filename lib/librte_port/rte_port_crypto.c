@@ -283,18 +283,14 @@ rte_port_crypto_writer_create(void *params, int socket_id)
 	port->burst_sz = conf->burst_sz;
 	port->nb_ops = 0;
 
-	printf("######## rte_port_crypto_writer_create: iv.data is %s\n",
-			(port->iv.data == NULL) ? "NULL" : "val");
-
 	uint32_t i;
+	printf("######## rte_port_crypto_writer_create: iv.data is :\n");
 	for(i = 0; i < port->iv.length; i++){
 		printf("%"PRIu8" ", port->iv.data[i]);
 	}
 	printf("\n");
 
-	printf("######## rte_port_crypto_writer_create: cipher.key.data is %s\n",
-					(port->cipher_xform.cipher.key.data == NULL) ? "NULL" : "val");
-
+	printf("######## rte_port_crypto_writer_create: cipher.key.data is :\n");
 	for(i = 0; i < port->cipher_xform.cipher.key.length; i++){
 		printf("%"PRIu8" ", port->cipher_xform.cipher.key.data[i]);
 	}
