@@ -1781,6 +1781,7 @@ parse_ecry_algo(enum rte_crypto_cipher_algorithm *algo, char *optarg)
 	unsigned i;
 
 	for (i = 0; i < RTE_CRYPTO_CIPHER_LIST_END; i++) {
+		printf("try %s, opt is %s\n", supported_cipher_algo[i], optarg);
 		if (!strcmp(supported_cipher_algo[i], optarg)) {
 			*algo = (enum rte_crypto_cipher_algorithm)i;
 			return 0;
@@ -1797,6 +1798,7 @@ parse_auth_algo(enum rte_crypto_auth_algorithm *algo, char *optarg)
 	unsigned i;
 
 	for (i = 0; i < RTE_CRYPTO_AUTH_LIST_END; i++) {
+		printf("try %s, opt is %s\n", supported_auth_algo[i], optarg);
 		if (!strcmp(supported_auth_algo[i], optarg)) {
 			*algo = (enum rte_crypto_auth_algorithm)i;
 			return 0;
