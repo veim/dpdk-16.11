@@ -1199,6 +1199,27 @@ check_type(struct app_ecry_params *p_ecry, struct rte_cryptodev_info *dev_info)
 	return -1;
 }
 
+static struct rte_cryptodev_sym_session *
+initialize_crypto_session(struct app_ecry_params *p_ecry, uint8_t cdev_id)
+{
+	struct rte_crypto_sym_xform *first_xform;
+
+	if (p_ecry->xform_chain == CIPHER_HASH) {
+		first_xform = &p_ecry->cipher_xform;
+		first_xform->next = &p_ecry->auth_xform;
+	} else if (p_ecry->xform_chain == HASH_CIPHER) {
+		first_xform = &p_ecry->auth_xform;
+		first_xform->next = &p_ecry->cipher_xform;
+	} else if (p_ecry->xform_chain == CIPHER_ONLY) {
+		first_xform = &p_ecry->cipher_xform;
+	} else {
+		first_xform = &p_ecry->auth_xform;
+	}
+
+	/* Setup Cipher Parameters */
+	return rte_cryptodev_sym_session_create(cdev_id, first_xform);
+}
+
 /* key part of Initialization for crypto dev */
 static int
 app_init_ecry(struct app_params *app)
@@ -1532,7 +1553,15 @@ app_init_ecry(struct app_params *app)
 
 		app->enabled_cdevs[cdev_id] = 1;
 		app->enabled_cdev_count++;
+
+		p_ecry->session = initialize_crypto_session(p_ecry, cdev_id);
+		if (p_ecry->session == NULL)
+			return;
+		APP_LOG(app, HIGH, "Initialised session, with return= %s...",
+				(p_ecry->session == NULL) ? "NULL" : "val");
+
 /*
+
 		op_pool = rte_crypto_op_pool_create("ecry_op_pool",
 				RTE_CRYPTO_OP_TYPE_SYMMETRIC, NB_MBUF, 128, 0,
 				rte_socket_id());
