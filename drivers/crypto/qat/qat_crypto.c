@@ -863,7 +863,7 @@ qat_pmd_enqueue_op_burst(void *qp, struct rte_crypto_op **ops,
 	tail = queue->tail;
 
 	printf("######## qat_pmd_enqueue_op_burst: inflight16=%"PRId16", max_inflights=%d",
-			tmp_qp->inflights16, queue->max_inflights);
+			int16_t(tmp_qp->inflights16), queue->max_inflights);
 
 	/* Find how many can actually fit on the ring */
 	overflow = rte_atomic16_add_return(&tmp_qp->inflights16, nb_ops)
