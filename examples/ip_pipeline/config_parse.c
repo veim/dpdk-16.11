@@ -1776,14 +1776,29 @@ parse_txq(struct app_params *app,
 
 /** Parse crypto cipher, auth operation argument */
 static int
-parse_crypto_algo(unsigned *algo, char *optarg)
+parse_ecry_algo(enum rte_crypto_cipher_algorithm *algo, char *optarg)
+{
+	unsigned i;
+
+	for (i = 0; i < RTE_CRYPTO_CIPHER_LIST_END; i++) {
+		if (!strcmp(supported_cipher_algo[i], optarg)) {
+			*algo = (enum rte_crypto_cipher_algorithm)i;
+			return 0;
+		}
+	}
+
+	printf("Cipher algorithm specified not supported!\n");
+	return -1;
+}
+
+static int
+parse_auth_algo(enum rte_crypto_auth_algorithm *algo, char *optarg)
 {
 	unsigned i;
 
 	for (i = 0; i < RTE_CRYPTO_AUTH_LIST_END; i++) {
-		printf("optalgo is %s, try %u\n", optarg, i);
 		if (!strcmp(supported_auth_algo[i], optarg)) {
-			*algo = i;
+			*algo = (enum rte_crypto_auth_algorithm)i;
 			return 0;
 		}
 	}
@@ -1820,8 +1835,8 @@ parse_ecry(struct app_params *app,
 		struct rte_cfgfile_entry *ent = &entries[i];
 
 		if (strcmp(ent->name, "ecry_algo") == 0) {
-			int status = parse_crypto_algo(
-					(unsigned *)&param->cipher_xform.cipher.algo, ent->value);
+			int status = parse_ecry_algo(
+					&param->cipher_xform.cipher.algo, ent->value);
 
 			PARSE_ERROR((status == 0), section_name,
 				ent->name);
@@ -1829,8 +1844,8 @@ parse_ecry(struct app_params *app,
 		}
 
 		if (strcmp(ent->name, "auth_algo") == 0) {
-			int status = parse_crypto_algo(
-					(unsigned *)&param->auth_xform.auth.algo, ent->value);
+			int status = parse_auth_algo(
+					&param->auth_xform.auth.algo, ent->value);
 
 			PARSE_ERROR((status == 0), section_name,
 				ent->name);
